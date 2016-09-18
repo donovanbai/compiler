@@ -21,6 +21,7 @@ public class PikaCompiler extends PikaApplication {
 	 * @throws FileNotFoundException 
 	 */
 	public static void main(String[] args) throws FileNotFoundException {
+		assert false;
 		checkArguments(args, className());
 		
 		Tokens.setPrintLevel(Tokens.Level.FULL);
