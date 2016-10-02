@@ -8,6 +8,7 @@ import inputHandler.LocatedChar;
 import inputHandler.LocatedCharStream;
 import inputHandler.PushbackCharStream;
 import inputHandler.TextLocation;
+import tokens.CommentToken;
 import tokens.IdentifierToken;
 import tokens.LextantToken;
 import tokens.NullToken;
@@ -46,6 +47,9 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 		}
 		else if(isEndOfInput(ch)) {
 			return NullToken.make(ch.getLocation());
+		}
+		else if(isCommentStart(ch)) {		//comment
+			return scanComment(ch);
 		}
 		else {
 			lexicalError(ch);
@@ -109,6 +113,26 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 	}
 	
 	
+	//comment lexical analysis
+	private Token scanComment(LocatedChar firstChar) {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(firstChar.getCharacter());
+		appendRestOfComment(buffer);
+		
+		return CommentToken.make(firstChar.getLocation(), buffer.toString());
+	}
+	
+	private void appendRestOfComment (StringBuffer buffer) {
+		LocatedChar c = input.next();
+		while(c.getCharacter() != '\n' && c.getCharacter() != '#') {
+			buffer.append(c.getCharacter());
+			c = input.next();
+		}
+		if (c.getCharacter() == '\n') input.pushback(c);
+		else buffer.append(c.getCharacter()); // append the hash that terminates the comment
+	}
+	
+	
 	//////////////////////////////////////////////////////////////////////////////
 	// Punctuator lexical analysis	
 	// old method left in to show a simple scanning method.
@@ -155,6 +179,9 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 		return lc == LocatedCharStream.FLAG_END_OF_INPUT;
 	}
 	
+	private boolean isCommentStart(LocatedChar lc) {
+		return lc.getCharacter() == '#';
+	}
 	
 	//////////////////////////////////////////////////////////////////////////////
 	// Error-reporting	

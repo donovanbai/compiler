@@ -266,7 +266,7 @@ public class Parser {
 		return left;
 	}
 	private boolean startsAdditiveExpression(Token token) {
-		return startsLiteral(token);
+		return startsMultiplicativeExpression(token);
 	}	
 
 	// multiplicativeExpression -> atomicExpression [MULT atomicExpression]*  (left-assoc)
@@ -361,6 +361,9 @@ public class Parser {
 	private void readToken() {
 		previouslyRead = nowReading;
 		nowReading = scanner.next();
+		while (nowReading.getClass() == CommentToken.class) { // skip comment tokens
+			nowReading = scanner.next();
+		}
 	}	
 	
 	// if the current token is one of the given lextants, read the next token.
