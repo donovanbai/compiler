@@ -1,6 +1,6 @@
 exec {
 	#this is a comment
-	const quarters :=  -6.
+	const quarters :=  1.
 	const dimes    :=  3.
 	const nickels  :=  7.
 	const pennies  := 17.

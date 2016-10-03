@@ -1,0 +1,11 @@
+exec {
+	#this is a comment
+	const a := 1.5.
+	const b := 2.0.
+    
+	const value := a * b.
+	print value, _n_.
+	
+	const value_two := a + b.
+	print value, _n_.
+}

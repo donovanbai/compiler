@@ -86,7 +86,7 @@
         PushD        $global-memory-block      
         PushI        0                         
         Add                                    %% quarters
-        PushI        6                         
+        PushI        1                         
         StoreI                                 
         PushD        $global-memory-block      
         PushI        4                         

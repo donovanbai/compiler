@@ -12,6 +12,7 @@ import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.MainBlockNode;
 import parseTree.nodeTypes.DeclarationNode;
 import parseTree.nodeTypes.ErrorNode;
+import parseTree.nodeTypes.FloatConstantNode;
 import parseTree.nodeTypes.IdentifierNode;
 import parseTree.nodeTypes.IntegerConstantNode;
 import parseTree.nodeTypes.NewlineNode;
@@ -90,7 +91,7 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		List<Type> childTypes = Arrays.asList(left.getType(), right.getType());
 		
 		Lextant operator = operatorFor(node);
-		FunctionSignature signature = FunctionSignature.signatureOf(operator);
+		FunctionSignature signature = FunctionSignature.signatureOf(operator, childTypes);
 		
 		if(signature.accepts(childTypes)) {
 			node.setType(signature.resultType());
@@ -125,6 +126,10 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	}
 	@Override
 	public void visit(SpaceNode node) {
+	}
+	@Override
+	public void visit(FloatConstantNode node) {
+		node.setType(PrimitiveType.FLOATING);
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// IdentifierNodes, with helper methods

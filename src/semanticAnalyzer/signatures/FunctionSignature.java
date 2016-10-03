@@ -18,7 +18,7 @@ public class FunctionSignature {
 	///////////////////////////////////////////////////////////////
 	// construction
 	
-	public FunctionSignature(Object whichVariant, Type ...types) {
+	public FunctionSignature(Object whichVariant, Type ...types) { // paramTypes comes before  resultType
 		assert(types.length >= 1);
 		storeParamTypes(types);
 		resultType = types[types.length-1];
@@ -81,24 +81,16 @@ public class FunctionSignature {
 		return neverMatchedSignature;
 	}
 	
-	///////////////////////////////////////////////////////////////////
-	// Signatures for pika-0 operators
-	// this section will probably disappear in pika-1 (in favor of FunctionSignatures)
-	
-	private static FunctionSignature addSignature = new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.INTEGER, PrimitiveType.INTEGER);
-	private static FunctionSignature multiplySignature = new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.INTEGER, PrimitiveType.INTEGER);
-	private static FunctionSignature greaterSignature = new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.INTEGER, PrimitiveType.BOOLEAN);
-
-	
 	// the switch here is ugly compared to polymorphism.  This should perhaps be a method on Lextant.
-	public static FunctionSignature signatureOf(Lextant lextant) {
+	public static FunctionSignature signatureOf(Lextant lextant, List<Type> operandTypes) {
 		assert(lextant instanceof Punctuator);	
 		Punctuator punctuator = (Punctuator)lextant;
 		
 		switch(punctuator) {
-		case ADD:		return addSignature;
-		case MULTIPLY:	return multiplySignature;
-		case GREATER:	return greaterSignature;
+		case ADD:		return FunctionSignatures.signaturesOf(Punctuator.ADD).acceptingSignature(operandTypes);
+		case SUBTRACT:	return FunctionSignatures.signaturesOf(Punctuator.SUBTRACT).acceptingSignature(operandTypes);
+		case MULTIPLY:	return FunctionSignatures.signaturesOf(Punctuator.MULTIPLY).acceptingSignature(operandTypes);
+		case GREATER:	return FunctionSignatures.signaturesOf(Punctuator.GREATER).acceptingSignature(operandTypes);
 
 		default:
 			return neverMatchedSignature;

@@ -2,24 +2,30 @@ package parser;
 
 import java.util.Arrays;
 
-import logging.PikaLogger;
-import parseTree.*;
-import parseTree.nodeTypes.BinaryOperatorNode;
-import parseTree.nodeTypes.BooleanConstantNode;
-import parseTree.nodeTypes.MainBlockNode;
-import parseTree.nodeTypes.DeclarationNode;
-import parseTree.nodeTypes.ErrorNode;
-import parseTree.nodeTypes.IdentifierNode;
-import parseTree.nodeTypes.IntegerConstantNode;
-import parseTree.nodeTypes.NewlineNode;
-import parseTree.nodeTypes.PrintStatementNode;
-import parseTree.nodeTypes.ProgramNode;
-import parseTree.nodeTypes.SpaceNode;
-import tokens.*;
 import lexicalAnalyzer.Keyword;
 import lexicalAnalyzer.Lextant;
 import lexicalAnalyzer.Punctuator;
 import lexicalAnalyzer.Scanner;
+import logging.PikaLogger;
+import parseTree.ParseNode;
+import parseTree.nodeTypes.BinaryOperatorNode;
+import parseTree.nodeTypes.BooleanConstantNode;
+import parseTree.nodeTypes.DeclarationNode;
+import parseTree.nodeTypes.ErrorNode;
+import parseTree.nodeTypes.FloatConstantNode;
+import parseTree.nodeTypes.IdentifierNode;
+import parseTree.nodeTypes.IntegerConstantNode;
+import parseTree.nodeTypes.MainBlockNode;
+import parseTree.nodeTypes.NewlineNode;
+import parseTree.nodeTypes.PrintStatementNode;
+import parseTree.nodeTypes.ProgramNode;
+import parseTree.nodeTypes.SpaceNode;
+import tokens.CommentToken;
+import tokens.FloatToken;
+import tokens.IdentifierToken;
+import tokens.NullToken;
+import tokens.NumberToken;
+import tokens.Token;
 
 
 public class Parser {
@@ -315,11 +321,14 @@ public class Parser {
 		if(startsBooleanConstant(nowReading)) {
 			return parseBooleanConstant();
 		}
-
+		if(startsFloat(nowReading)) {
+			return parseFloat();
+		}
+		
 		return syntaxErrorNode("literal");
 	}
 	private boolean startsLiteral(Token token) {
-		return startsIntNumber(token) || startsIdentifier(token) || startsBooleanConstant(token);
+		return startsIntNumber(token) || startsIdentifier(token) || startsBooleanConstant(token) || startsFloat(token);
 	}
 
 	// number (terminal)
@@ -330,8 +339,20 @@ public class Parser {
 		readToken();
 		return new IntegerConstantNode(previouslyRead);
 	}
+	private ParseNode parseFloat() {
+		if(!startsFloat(nowReading)) {
+			return syntaxErrorNode("float constant");
+		}
+		readToken();
+		return new FloatConstantNode(previouslyRead);
+	}
+	
 	private boolean startsIntNumber(Token token) {
 		return token instanceof NumberToken;
+	}
+	
+	private boolean startsFloat(Token token) {
+		return token instanceof FloatToken;
 	}
 
 	// identifier (terminal)

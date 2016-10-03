@@ -9,6 +9,7 @@ import inputHandler.LocatedCharStream;
 import inputHandler.PushbackCharStream;
 import inputHandler.TextLocation;
 import tokens.CommentToken;
+import tokens.FloatToken;
 import tokens.IdentifierToken;
 import tokens.LextantToken;
 import tokens.NullToken;
@@ -39,10 +40,10 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 		if(ch.isDigit()) {
 			return scanNumber(ch);
 		}
-		else if(ch.isLowerCase()) {
+		else if(ch.isLowerCase()) { // '_' counts as lower case
 			return scanIdentifier(ch);
 		}
-		else if(isPunctuatorStart(ch)) {
+		else if(isPunctuatorStart(ch)) {	
 			if ((ch.getCharacter() == '+' || ch.getCharacter() == '-') &&  !prevIsLitOrId) {
 				return scanNumber(ch);
 			}
@@ -53,7 +54,7 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 		else if(isEndOfInput(ch)) {
 			return NullToken.make(ch.getLocation());
 		}
-		else if(isCommentStart(ch)) {		//comment
+		else if(isCommentStart(ch)) {		
 			return scanComment(ch);
 		}
 		else {
@@ -73,14 +74,14 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 	
 	
 	//////////////////////////////////////////////////////////////////////////////
-	// Integer lexical analysis	
+	// Integer and float lexical analysis	
 
 	private Token scanNumber(LocatedChar firstChar) {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(firstChar.getCharacter());
 		appendSubsequentDigits(buffer);
-		
-		return NumberToken.make(firstChar.getLocation(), buffer.toString());
+		if (appendFractionalPart(buffer)) return FloatToken.make(firstChar.getLocation(), buffer.toString());	// if number is a float		
+		else return NumberToken.make(firstChar.getLocation(), buffer.toString());	// if number is an integer
 	}
 	private void appendSubsequentDigits(StringBuffer buffer) {
 		LocatedChar c = input.next();
@@ -89,6 +90,21 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 			c = input.next();
 		}
 		input.pushback(c);
+	}
+	private boolean appendFractionalPart(StringBuffer buffer) { // returns true if input is a float, false otherwise
+		LocatedChar c = input.next();
+		LocatedChar c2 = input.next();
+		if (c.getCharacter() != '.' || !c2.isDigit()) {
+			input.pushback(c2);
+			input.pushback(c);
+			return false;
+		}
+		else {
+			buffer.append(c.getCharacter());
+			buffer.append(c2.getCharacter());
+			appendSubsequentDigits(buffer);
+			return true;
+		}
 	}
 	
 	
