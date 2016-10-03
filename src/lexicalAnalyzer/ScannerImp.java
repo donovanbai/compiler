@@ -1,19 +1,18 @@
 package lexicalAnalyzer;
 
 import inputHandler.PushbackCharStream;
-import tokens.NullToken;
-import tokens.Token;
+import tokens.*;
 
 public abstract class ScannerImp implements Scanner {
 	private Token nextToken;
 	protected final PushbackCharStream input;
 	
-	protected abstract Token findNextToken();
+	protected abstract Token findNextToken(boolean prevIsLitOrId); // previous token is literal or identifier
 
 	public ScannerImp(PushbackCharStream input) {
 		super();
 		this.input = input;
-		nextToken = findNextToken();
+		nextToken = findNextToken(false);
 	}
 
 	// Iterator<Token> implementation
@@ -25,7 +24,10 @@ public abstract class ScannerImp implements Scanner {
 	@Override
 	public Token next() {
 		Token result = nextToken;
-		nextToken = findNextToken();
+		if (result.getClass() == NumberToken.class || result.getClass() == IdentifierToken.class) {
+			nextToken = findNextToken(true);
+		}
+		else nextToken = findNextToken(false);
 		return result;
 	}
 
