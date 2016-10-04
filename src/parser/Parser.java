@@ -218,8 +218,8 @@ public class Parser {
 	// expressions
 	// expr                     -> comparisonExpression
 	// comparisonExpression     -> additiveExpression [> additiveExpression]?
-	// additiveExpression       -> multiplicativeExpression [+ multiplicativeExpression]*  (left-assoc)
-	// multiplicativeExpression -> atomicExpression [MULT atomicExpression]*  (left-assoc)
+	// additiveExpression       -> multiplicativeExpression [(+|-) multiplicativeExpression]*  (left-assoc)
+	// multiplicativeExpression -> atomicExpression [(MULT|/) atomicExpression]*  (left-assoc)
 	// atomicExpression         -> literal
 	// literal                  -> intNumber | identifier | booleanConstant
 
@@ -255,14 +255,14 @@ public class Parser {
 		return startsAdditiveExpression(token);
 	}
 
-	// additiveExpression -> multiplicativeExpression [+ multiplicativeExpression]*  (left-assoc)
+	// additiveExpression -> multiplicativeExpression [(+|-) multiplicativeExpression]*  (left-assoc)
 	private ParseNode parseAdditiveExpression() {
 		if(!startsAdditiveExpression(nowReading)) {
 			return syntaxErrorNode("additiveExpression");
 		}
 		
 		ParseNode left = parseMultiplicativeExpression();
-		while(nowReading.isLextant(Punctuator.ADD)) {
+		while(nowReading.isLextant(Punctuator.ADD) || nowReading.isLextant(Punctuator.SUBTRACT)) {
 			Token additiveToken = nowReading;
 			readToken();
 			ParseNode right = parseMultiplicativeExpression();
@@ -275,14 +275,14 @@ public class Parser {
 		return startsMultiplicativeExpression(token);
 	}	
 
-	// multiplicativeExpression -> atomicExpression [MULT atomicExpression]*  (left-assoc)
+	// multiplicativeExpression -> atomicExpression [(MULT|/) atomicExpression]*  (left-assoc)
 	private ParseNode parseMultiplicativeExpression() {
 		if(!startsMultiplicativeExpression(nowReading)) {
 			return syntaxErrorNode("multiplicativeExpression");
 		}
 		
 		ParseNode left = parseAtomicExpression();
-		while(nowReading.isLextant(Punctuator.MULTIPLY)) {
+		while(nowReading.isLextant(Punctuator.MULTIPLY) || nowReading.isLextant(Punctuator.DIVIDE)) {
 			Token multiplicativeToken = nowReading;
 			readToken();
 			ParseNode right = parseAtomicExpression();

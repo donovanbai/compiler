@@ -1,11 +1,14 @@
 exec {
 	#this is a comment
+	const c := 4.
+	const d := 2.
 	const a := 1.5.
-	const b := 2.0.
+	const b := -2.0.
+	#print b, _n_.
     
-	const value := a * b.
+	const value := a / b.
 	print value, _n_.
 	
-	const value_two := a + b.
-	print value, _n_.
+	#const value_two := a + b.
+	#print value, _n_.
 }

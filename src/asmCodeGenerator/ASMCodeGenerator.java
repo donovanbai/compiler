@@ -13,6 +13,7 @@ import parseTree.nodeTypes.BinaryOperatorNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.MainBlockNode;
 import parseTree.nodeTypes.DeclarationNode;
+import parseTree.nodeTypes.FloatConstantNode;
 import parseTree.nodeTypes.IdentifierNode;
 import parseTree.nodeTypes.IntegerConstantNode;
 import parseTree.nodeTypes.NewlineNode;
@@ -141,6 +142,9 @@ public class ASMCodeGenerator {
 			else if(node.getType() == PrimitiveType.BOOLEAN) {
 				code.add(LoadC);
 			}	
+			else if (node.getType() == PrimitiveType.FLOATING) {
+				code.add(LoadF);
+			}
 			else {
 				assert false : "node " + node;
 			}
@@ -209,6 +213,9 @@ public class ASMCodeGenerator {
 			if(type == PrimitiveType.BOOLEAN) {
 				return StoreC;
 			}
+			if(type == PrimitiveType.FLOATING) {
+				return StoreF;
+			}
 			assert false: "Type " + type + " unimplemented in opcodeForStore()";
 			return null;
 		}
@@ -265,19 +272,23 @@ public class ASMCodeGenerator {
 			newValueCode(node);
 			ASMCodeFragment arg1 = removeValueCode(node.child(0));
 			ASMCodeFragment arg2 = removeValueCode(node.child(1));
+			Type type1 = node.child(0).getType();
+			Type type2 = node.child(1).getType();
 			
 			code.append(arg1);
 			code.append(arg2);
 			
-			ASMOpcode opcode = opcodeForOperator(node.getOperator());
+			ASMOpcode opcode = opcodeForOperator(node.getOperator(), type1, type2);
 			code.add(opcode);							// type-dependent! (opcode is different for floats and for ints)
 		}
-		private ASMOpcode opcodeForOperator(Lextant lextant) {
+		private ASMOpcode opcodeForOperator(Lextant lextant, Type...types) {
 			assert(lextant instanceof Punctuator);
 			Punctuator punctuator = (Punctuator)lextant;
 			switch(punctuator) {
-			case ADD: 	   		return Add;				// type-dependent!
-			case MULTIPLY: 		return Multiply;		// type-dependent!
+			case ADD: 	   		return types[0] == PrimitiveType.FLOATING ? FAdd : Add;
+			case SUBTRACT:		return types[0] == PrimitiveType.FLOATING ? FSubtract : Subtract;
+			case MULTIPLY: 		return types[0] == PrimitiveType.FLOATING ? FMultiply : Multiply;
+			case DIVIDE:		return types[0] == PrimitiveType.FLOATING ? FDivide : Divide;
 			default:
 				assert false : "unimplemented operator in opcodeForOperator";
 			}
@@ -300,6 +311,11 @@ public class ASMCodeGenerator {
 			newValueCode(node);
 			
 			code.add(PushI, node.getValue());
+		}
+		public void visit(FloatConstantNode node) {
+			newValueCode(node);
+			
+			code.add(PushF, node.getValue());
 		}
 	}
 
