@@ -23,6 +23,6 @@ public class NumberToken extends TokenImp {
 	
 	@Override
 	protected String rawString() {
-		return "number, " + value;
+		return "integer, " + value;
 	}
 }

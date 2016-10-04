@@ -8,6 +8,7 @@ import inputHandler.LocatedChar;
 import inputHandler.LocatedCharStream;
 import inputHandler.PushbackCharStream;
 import inputHandler.TextLocation;
+import tokens.CharToken;
 import tokens.CommentToken;
 import tokens.FloatToken;
 import tokens.IdentifierToken;
@@ -51,11 +52,31 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 				return PunctuatorScanner.scan(ch, input);
 			}
 		}
-		else if(isEndOfInput(ch)) {
-			return NullToken.make(ch.getLocation());
-		}
 		else if(isCommentStart(ch)) {		
 			return scanComment(ch);
+		}
+		else if(isCharStart(ch)) {
+			LocatedChar ch2 = input.next();
+			int asciiVal = ch2.getCharacter();
+			if (asciiVal < 32 || asciiVal > 126) {
+				input.pushback(ch2);
+				lexicalError(ch);
+				return findNextToken(prevIsLitOrId);
+			}
+			LocatedChar ch3 = input.next();
+			if (ch3.getCharacter() != '^') {
+				input.pushback(ch3);
+				input.pushback(ch2);
+				lexicalError(ch);
+				return findNextToken(prevIsLitOrId);
+			}
+			StringBuffer buffer = new StringBuffer();
+			char[] chars = {ch.getCharacter(), ch2.getCharacter(), ch3.getCharacter()};
+			buffer.append(chars);
+			return CharToken.make(ch.getLocation(), buffer.toString());
+		}
+		else if(isEndOfInput(ch)) {
+			return NullToken.make(ch.getLocation());
 		}
 		else {
 			lexicalError(ch);
@@ -224,7 +245,7 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 		}
 	}
 
-	
+
 
 	//////////////////////////////////////////////////////////////////////////////
 	// Character-classification routines specific to Pika scanning.	
@@ -242,6 +263,9 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 		return lc.getCharacter() == '#';
 	}
 	
+	private boolean isCharStart(LocatedChar lc) {
+		return lc.getCharacter() == '^';
+	}
 	//////////////////////////////////////////////////////////////////////////////
 	// Error-reporting	
 

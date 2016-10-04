@@ -10,6 +10,7 @@ import logging.PikaLogger;
 import parseTree.ParseNode;
 import parseTree.nodeTypes.BinaryOperatorNode;
 import parseTree.nodeTypes.BooleanConstantNode;
+import parseTree.nodeTypes.CharConstantNode;
 import parseTree.nodeTypes.DeclarationNode;
 import parseTree.nodeTypes.ErrorNode;
 import parseTree.nodeTypes.FloatConstantNode;
@@ -20,6 +21,7 @@ import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
+import tokens.CharToken;
 import tokens.CommentToken;
 import tokens.FloatToken;
 import tokens.IdentifierToken;
@@ -324,11 +326,14 @@ public class Parser {
 		if(startsFloat(nowReading)) {
 			return parseFloat();
 		}
+		if(startsChar(nowReading)) {
+			return parseChar();
+		}
 		
 		return syntaxErrorNode("literal");
 	}
 	private boolean startsLiteral(Token token) {
-		return startsIntNumber(token) || startsIdentifier(token) || startsBooleanConstant(token) || startsFloat(token);
+		return startsIntNumber(token) || startsIdentifier(token) || startsBooleanConstant(token) || startsFloat(token) || startsChar(token);
 	}
 
 	// number (terminal)
@@ -341,10 +346,17 @@ public class Parser {
 	}
 	private ParseNode parseFloat() {
 		if(!startsFloat(nowReading)) {
-			return syntaxErrorNode("float constant");
+			return syntaxErrorNode("floating constant");
 		}
 		readToken();
 		return new FloatConstantNode(previouslyRead);
+	}
+	private ParseNode parseChar() {
+		if(!startsChar(nowReading)) {
+			return syntaxErrorNode("character constant");
+		}
+		readToken();
+		return new CharConstantNode(previouslyRead);
 	}
 	
 	private boolean startsIntNumber(Token token) {
@@ -353,6 +365,10 @@ public class Parser {
 	
 	private boolean startsFloat(Token token) {
 		return token instanceof FloatToken;
+	}
+	
+	private boolean startsChar(Token token) {
+		return token instanceof CharToken;
 	}
 
 	// identifier (terminal)
