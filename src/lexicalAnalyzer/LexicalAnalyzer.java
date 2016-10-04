@@ -44,7 +44,7 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 			return scanIdentifier(ch);
 		}
 		else if(isPunctuatorStart(ch)) {	
-			if ((ch.getCharacter() == '+' || ch.getCharacter() == '-') &&  !prevIsLitOrId) {
+			if ((ch.getCharacter() == '+' || ch.getCharacter() == '-') &&  !prevIsLitOrId || ch.getCharacter() == '.' && input.peek().isDigit()) {
 				return scanNumber(ch);
 			}
 			else {
@@ -80,8 +80,17 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(firstChar.getCharacter());
 		appendSubsequentDigits(buffer);
-		if (appendFractionalPart(buffer)) return FloatToken.make(firstChar.getLocation(), buffer.toString());	// if number is a float		
-		else return NumberToken.make(firstChar.getLocation(), buffer.toString());	// if number is an integer
+		if (firstChar.getCharacter() == '.') { // current form is, for example, .001
+			appendScientificNotation(buffer);
+			return FloatToken.make(firstChar.getLocation(), buffer.toString());
+		}
+		else { // current form is, for example, 100 or +100
+			if (appendFractionalPart(buffer)) { // if it's a float
+				appendScientificNotation(buffer);
+				return FloatToken.make(firstChar.getLocation(), buffer.toString());	// if number is a float		
+			}
+			else return NumberToken.make(firstChar.getLocation(), buffer.toString());	// if number is an integer
+		}
 	}
 	private void appendSubsequentDigits(StringBuffer buffer) {
 		LocatedChar c = input.next();
@@ -90,6 +99,36 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 			c = input.next();
 		}
 		input.pushback(c);
+	}
+	private void appendScientificNotation(StringBuffer buffer) {
+		LocatedChar c = input.next();
+		if (c.getCharacter() != 'E') {
+			input.pushback(c);
+			return;
+		}		
+		LocatedChar c2 = input.next();
+		if (c2.getCharacter() == '+' || c2.getCharacter() == '-') {
+			LocatedChar c3 = input.next();
+			if (!c3.isDigit()) {
+				input.pushback(c3);
+				input.pushback(c2);
+				input.pushback(c);
+				return;
+			}
+			buffer.append(c.getCharacter());
+			buffer.append(c2.getCharacter());
+			buffer.append(c3.getCharacter());
+			appendSubsequentDigits(buffer);
+		}
+		else if (c2.isDigit()) {
+			buffer.append(c.getCharacter());
+			buffer.append(c2.getCharacter());
+			appendSubsequentDigits(buffer);			
+		}
+		else {
+			input.pushback(c2);
+			input.pushback(c);
+		}
 	}
 	private boolean appendFractionalPart(StringBuffer buffer) { // returns true if input is a float, false otherwise
 		LocatedChar c = input.next();

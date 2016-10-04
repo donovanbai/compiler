@@ -1,13 +1,4 @@
 exec {
-	#this is a comment
-	const a := 4.
-	const b := 2.
-	const c := 4/0.
+	const c := -.2E-2.
 	print c, _n_.
-    
-	#const value := a / b.
-	#print value, _n_.
-	
-	#const value_two := a + b.
-	#print value, _n_.
 }
