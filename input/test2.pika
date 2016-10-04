@@ -1,4 +1,4 @@
 exec {
-	const c := -.2E-2.
-	print c, _n_.
+	const _aC_$1sl := 5.
+	print _aC_$1sl, _n_.
 }

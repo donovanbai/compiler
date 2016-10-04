@@ -59,4 +59,10 @@ public class LocatedChar {
 	public boolean isWhitespace() {
 		return Character.isWhitespace(character);
 	}
+	public boolean isIdStart() { // checks if character starts an identifier
+		return Character.isLetter(character) || character == '_';
+	}
+	public boolean isIdChar() { // checks if character is a valid non-first character in an identifier
+		return Character.isLetter(character) || character == '_' || character == '$' || Character.isDigit(character);
+	}
 }

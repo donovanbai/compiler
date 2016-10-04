@@ -40,7 +40,7 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 		if(ch.isDigit()) {
 			return scanNumber(ch);
 		}
-		else if(ch.isLowerCase()) { // '_' counts as lower case
+		else if(ch.isIdStart()) {
 			return scanIdentifier(ch);
 		}
 		else if(isPunctuatorStart(ch)) {	
@@ -153,7 +153,7 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 	private Token scanIdentifier(LocatedChar firstChar) {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(firstChar.getCharacter());
-		appendSubsequentLowercase(buffer);
+		appendSubsequentIdChars(buffer);
 
 		String lexeme = buffer.toString();
 		if(Keyword.isAKeyword(lexeme)) {
@@ -163,15 +163,14 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 			return IdentifierToken.make(firstChar.getLocation(), lexeme);
 		}
 	}
-	private void appendSubsequentLowercase(StringBuffer buffer) {
+	private void appendSubsequentIdChars(StringBuffer buffer) { // [ a..zA..Z_$0..9 ]*
 		LocatedChar c = input.next();
-		while(c.isLowerCase()) {
+		while(c.isIdChar()) {
 			buffer.append(c.getCharacter());
 			c = input.next();
 		}
 		input.pushback(c);
 	}
-	
 	
 	//comment lexical analysis
 	private Token scanComment(LocatedChar firstChar) {

@@ -85,18 +85,18 @@
         Jump         $$general-runtime-error   
         DLabel       $usable-memory-start      
         DLabel       $global-memory-block      
-        DataZ        8                         
+        DataZ        4                         
         Label        $$main                    
         PushD        $global-memory-block      
         PushI        0                         
-        Add                                    %% c
-        PushF        -0.002000                 
-        StoreF                                 
+        Add                                    %% _
+        PushI        5                         
+        StoreI                                 
         PushD        $global-memory-block      
         PushI        0                         
-        Add                                    %% c
-        LoadF                                  
-        PushD        $print-format-floating    
+        Add                                    %% _
+        LoadI                                  
+        PushD        $print-format-integer     
         Printf                                 
         PushD        $print-format-newline     
         Printf                                 
