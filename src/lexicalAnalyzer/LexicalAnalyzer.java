@@ -15,6 +15,7 @@ import tokens.IdentifierToken;
 import tokens.LextantToken;
 import tokens.NullToken;
 import tokens.NumberToken;
+import tokens.StringToken;
 import tokens.Token;
 
 import static lexicalAnalyzer.PunctuatorScanningAids.*;
@@ -38,13 +39,13 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 	protected Token findNextToken(boolean prevIsLitOrId) {
 		LocatedChar ch = nextNonWhitespaceChar();
 		
-		if(ch.isDigit()) {
+		if (ch.isDigit()) {
 			return scanNumber(ch);
 		}
-		else if(ch.isIdStart()) {
+		else if (ch.isIdStart()) {
 			return scanIdentifier(ch);
 		}
-		else if(isPunctuatorStart(ch)) {	
+		else if (isPunctuatorStart(ch)) {	
 			if ((ch.getCharacter() == '+' || ch.getCharacter() == '-') &&  !prevIsLitOrId || ch.getCharacter() == '.' && input.peek().isDigit()) {
 				return scanNumber(ch);
 			}
@@ -52,19 +53,19 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 				return PunctuatorScanner.scan(ch, input);
 			}
 		}
-		else if(isCommentStart(ch)) {		
+		else if (isCommentStart(ch)) {
 			return scanComment(ch);
 		}
-		else if(isCharStart(ch)) {
+		else if (isCharStart(ch)) { // ^
 			LocatedChar ch2 = input.next();
 			int asciiVal = ch2.getCharacter();
-			if (asciiVal < 32 || asciiVal > 126) {
+			if (asciiVal < 32 || asciiVal > 126) { // if character following ^ is invalid, assume ^ is an extra character and move on
 				input.pushback(ch2);
 				lexicalError(ch);
 				return findNextToken(prevIsLitOrId);
 			}
 			LocatedChar ch3 = input.next();
-			if (ch3.getCharacter() != '^') {
+			if (ch3.getCharacter() != '^') { // if character following ^c is not ^, assume ^ is an extra character and move on
 				input.pushback(ch3);
 				input.pushback(ch2);
 				lexicalError(ch);
@@ -75,7 +76,15 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 			buffer.append(chars);
 			return CharToken.make(ch.getLocation(), buffer.toString());
 		}
-		else if(isEndOfInput(ch)) {
+		else if (isStringStart(ch)) {
+			StringBuffer buffer = new StringBuffer();
+			buffer.append(ch.getCharacter());
+			if (!appendRestOfString(buffer)) { // if newline was found in string, ignore everything from " to \n and move on
+				return findNextToken(prevIsLitOrId);
+			}
+			return StringToken.make(ch.getLocation(), buffer.toString());
+		}
+		else if (isEndOfInput(ch)) {
 			return NullToken.make(ch.getLocation());
 		}
 		else {
@@ -213,6 +222,22 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 	}
 	
 	
+	// string lexical analysis
+	private boolean appendRestOfString(StringBuffer buffer) {
+		LocatedChar c = input.next();
+		while(c.getCharacter() != '\n' && c.getCharacter() != '"') {
+			buffer.append(c.getCharacter());
+			c = input.next();
+		}
+		if (c.getCharacter() == '\n') {
+			lexicalError(c);
+			return false;
+		}
+		buffer.append(c.getCharacter());
+		return true;
+	}
+	
+	
 	//////////////////////////////////////////////////////////////////////////////
 	// Punctuator lexical analysis	
 	// old method left in to show a simple scanning method.
@@ -265,6 +290,10 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 	
 	private boolean isCharStart(LocatedChar lc) {
 		return lc.getCharacter() == '^';
+	}
+	
+	private boolean isStringStart(LocatedChar lc) {
+		return lc.getCharacter() == '"';
 	}
 	//////////////////////////////////////////////////////////////////////////////
 	// Error-reporting	

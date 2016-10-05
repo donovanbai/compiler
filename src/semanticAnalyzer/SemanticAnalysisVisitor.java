@@ -20,6 +20,7 @@ import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
+import parseTree.nodeTypes.StringConstantNode;
 import semanticAnalyzer.signatures.FunctionSignature;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
@@ -141,6 +142,9 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	@Override
 	public void visit(CharConstantNode node) {
 		node.setType(PrimitiveType.CHARACTER);
+	}
+	public void visit(StringConstantNode node) {
+		node.setType(PrimitiveType.STRING);
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// IdentifierNodes, with helper methods

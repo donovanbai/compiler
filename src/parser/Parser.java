@@ -21,12 +21,14 @@ import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
+import parseTree.nodeTypes.StringConstantNode;
 import tokens.CharToken;
 import tokens.CommentToken;
 import tokens.FloatToken;
 import tokens.IdentifierToken;
 import tokens.NullToken;
 import tokens.NumberToken;
+import tokens.StringToken;
 import tokens.Token;
 
 
@@ -329,11 +331,14 @@ public class Parser {
 		if(startsChar(nowReading)) {
 			return parseChar();
 		}
+		if(startsString(nowReading)) {
+			return parseString();
+		}
 		
 		return syntaxErrorNode("literal");
 	}
-	private boolean startsLiteral(Token token) {
-		return startsIntNumber(token) || startsIdentifier(token) || startsBooleanConstant(token) || startsFloat(token) || startsChar(token);
+	public static boolean startsLiteral(Token token) {
+		return startsIntNumber(token) || startsIdentifier(token) || startsBooleanConstant(token) || startsFloat(token) || startsChar(token) || startsString(token);
 	}
 
 	// number (terminal)
@@ -344,6 +349,7 @@ public class Parser {
 		readToken();
 		return new IntegerConstantNode(previouslyRead);
 	}
+	
 	private ParseNode parseFloat() {
 		if(!startsFloat(nowReading)) {
 			return syntaxErrorNode("floating constant");
@@ -351,6 +357,7 @@ public class Parser {
 		readToken();
 		return new FloatConstantNode(previouslyRead);
 	}
+	
 	private ParseNode parseChar() {
 		if(!startsChar(nowReading)) {
 			return syntaxErrorNode("character constant");
@@ -359,16 +366,28 @@ public class Parser {
 		return new CharConstantNode(previouslyRead);
 	}
 	
-	private boolean startsIntNumber(Token token) {
+	private ParseNode parseString() {
+		if(!startsString(nowReading)) {
+			return syntaxErrorNode("string constant");
+		}
+		readToken();
+		return new StringConstantNode(previouslyRead);
+	}
+	
+	private static boolean startsIntNumber(Token token) {
 		return token instanceof NumberToken;
 	}
 	
-	private boolean startsFloat(Token token) {
+	private static boolean startsFloat(Token token) {
 		return token instanceof FloatToken;
 	}
 	
-	private boolean startsChar(Token token) {
+	private static boolean startsChar(Token token) {
 		return token instanceof CharToken;
+	}
+	
+	private static boolean startsString(Token token) {
+		return token instanceof StringToken;
 	}
 
 	// identifier (terminal)
@@ -379,7 +398,7 @@ public class Parser {
 		readToken();
 		return new IdentifierNode(previouslyRead);
 	}
-	private boolean startsIdentifier(Token token) {
+	private static boolean startsIdentifier(Token token) {
 		return token instanceof IdentifierToken;
 	}
 
@@ -391,7 +410,7 @@ public class Parser {
 		readToken();
 		return new BooleanConstantNode(previouslyRead);
 	}
-	private boolean startsBooleanConstant(Token token) {
+	private static boolean startsBooleanConstant(Token token) {
 		return token.isLextant(Keyword.TRUE, Keyword.FALSE);
 	}
 

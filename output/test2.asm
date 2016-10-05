@@ -9,6 +9,14 @@
         DataC        37                        %% "%g"
         DataC        103                       
         DataC        0                         
+        DLabel       $print-format-character   
+        DataC        37                        %% "%c"
+        DataC        99                        
+        DataC        0                         
+        DLabel       $print-format-string      
+        DataC        37                        %% "%s"
+        DataC        115                       
+        DataC        0                         
         DLabel       $print-format-boolean     
         DataC        37                        %% "%s"
         DataC        115                       
@@ -85,18 +93,23 @@
         Jump         $$general-runtime-error   
         DLabel       $usable-memory-start      
         DLabel       $global-memory-block      
-        DataZ        4                         
+        DataZ        12                        
         Label        $$main                    
-        PushD        $global-memory-block      
-        PushI        0                         
-        Add                                    %% _
-        PushI        5                         
-        StoreI                                 
-        PushD        $global-memory-block      
-        PushI        0                         
-        Add                                    %% _
-        LoadI                                  
-        PushD        $print-format-integer     
+        DLabel       c1                        
+        DataC        98                        
+        DataC        121                       
+        DataC        101                       
+        DataC        0                         
+        DLabel       c2                        
+        DataC        102                       
+        DataC        49                        
+        DataC        0                         
+        DLabel       c3                        
+        DataC        104                       
+        DataC        105                       
+        DataC        0                         
+        PushD        c3                        
+        PushD        $print-format-string      
         Printf                                 
         PushD        $print-format-newline     
         Printf                                 

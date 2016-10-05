@@ -1,6 +1,7 @@
 package lexicalAnalyzer;
 
 import inputHandler.PushbackCharStream;
+import parser.Parser;
 import tokens.*;
 
 public abstract class ScannerImp implements Scanner {
@@ -24,13 +25,13 @@ public abstract class ScannerImp implements Scanner {
 	@Override
 	public Token next() {
 		Token result = nextToken;
-		if (result.getClass() == NumberToken.class || result.getClass() == IdentifierToken.class) {
+		if (Parser.startsLiteral(result)) {
 			nextToken = findNextToken(true);
 		}
 		else nextToken = findNextToken(false);
 		return result;
 	}
-
+	
 	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();

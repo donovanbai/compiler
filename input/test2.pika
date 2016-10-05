@@ -1,4 +1,6 @@
 exec {
-	const c := ^?^.
-	print c, _n_.
+	const c1 := "bye".
+	const c2 := "f1".
+	const c3 := "hi".
+	print c3, _n_.
 }

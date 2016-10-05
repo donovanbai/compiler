@@ -21,6 +21,7 @@ import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
+import parseTree.nodeTypes.StringConstantNode;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
 import symbolTable.Binding;
@@ -149,6 +150,9 @@ public class ASMCodeGenerator {
 			else if (node.getType() == PrimitiveType.CHARACTER) {
 				code.add(LoadC);
 			}
+			else if (node.getType() == PrimitiveType.STRING) {
+				//code.add(LoadC);
+			}
 			else {
 				assert false : "node " + node;
 			}
@@ -201,14 +205,20 @@ public class ASMCodeGenerator {
 
 		public void visitLeave(DeclarationNode node) {
 			newVoidCode(node);
-			ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
-			ASMCodeFragment rvalue = removeValueCode(node.child(1));
-			
-			code.append(lvalue);
-			code.append(rvalue);
-			
-			Type type = node.getType();
-			code.add(opcodeForStore(type));
+			if (node.child(1).getType() == PrimitiveType.STRING) {
+				ASMCodeFragment rvalue = removeVoidCode(node.child(1));
+				code.append(rvalue);
+			}
+			else {
+				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
+				ASMCodeFragment rvalue = removeValueCode(node.child(1));
+				
+				code.append(lvalue);
+				code.append(rvalue);
+				
+				Type type = node.getType();
+				code.add(opcodeForStore(type));
+			}
 		}
 		private ASMOpcode opcodeForStore(Type type) {
 			if(type == PrimitiveType.INTEGER) {
@@ -222,6 +232,9 @@ public class ASMCodeGenerator {
 			}
 			if(type == PrimitiveType.CHARACTER) {
 				return StoreC;
+			}
+			if(type == PrimitiveType.STRING) {
+				return Nop;
 			}
 			assert false: "Type " + type + " unimplemented in opcodeForStore()";
 			return null;
@@ -328,6 +341,22 @@ public class ASMCodeGenerator {
 			newValueCode(node);
 			
 			code.add(PushI, node.getValue());
+		}
+		public void visit(StringConstantNode node) {
+			newVoidCode(node);
+			
+			if (node.getParent() instanceof DeclarationNode) {
+				DeclarationNode parent = (DeclarationNode)node.getParent();
+				code.add(DLabel, parent.child(0).getToken().getLexeme());
+			}
+			else {
+				code.add(DLabel, "str");
+			}
+			for (int i = 0; i < node.getValue().length(); i++) {
+				int asciiVal = node.getValue().charAt(i);
+				code.add(DataC, asciiVal);
+			}
+			code.add(DataC, 0);
 		}
 	}
 
