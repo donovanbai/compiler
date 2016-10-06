@@ -274,9 +274,13 @@ public class ASMCodeGenerator {
 			code.add(Label, arg2Label);
 			code.append(arg2);
 			code.add(Label, subLabel);
-			code.add(Subtract);
 			
-			code.add(JumpPos, trueLabel);
+			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(FSubtract);
+			else code.add(Subtract);
+			
+			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(JumpFPos, trueLabel);
+			else code.add(JumpPos, trueLabel);
+			
 			code.add(Jump, falseLabel);
 
 			code.add(Label, trueLabel);
