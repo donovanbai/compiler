@@ -1,6 +1,6 @@
 exec {
-	const a := ^c^ != ^d^.
-	const b := 5 != 4.
-	const c := 1.0 != 0.5.
-	print a, _n_, b, _n_, c, _n_.
+	const a := _true_.
+	const b := _true_.
+	const c := a == b.
+	print c, _n_.
 }
