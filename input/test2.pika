@@ -1,8 +1,6 @@
 exec {
-	const a := ^c^.
-	const b := ^d^.
-	const c := a > b.
-	const d := 3. 
-	const e := 2.0.
-	print c, _n_.
+	const a := ^c^ != ^d^.
+	const b := 5 != 4.
+	const c := 1.0 != 0.5.
+	print a, _n_, b, _n_, c, _n_.
 }

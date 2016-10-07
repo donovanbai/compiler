@@ -87,12 +87,16 @@ public class FunctionSignature {
 		Punctuator punctuator = (Punctuator)lextant;
 		
 		switch(punctuator) {
-		case ADD:		return FunctionSignatures.signaturesOf(Punctuator.ADD).acceptingSignature(operandTypes);
-		case SUBTRACT:	return FunctionSignatures.signaturesOf(Punctuator.SUBTRACT).acceptingSignature(operandTypes);
-		case MULTIPLY:	return FunctionSignatures.signaturesOf(Punctuator.MULTIPLY).acceptingSignature(operandTypes);
-		case DIVIDE:	return FunctionSignatures.signaturesOf(Punctuator.MULTIPLY).acceptingSignature(operandTypes);
-		case GREATER:	return FunctionSignatures.signaturesOf(Punctuator.GREATER).acceptingSignature(operandTypes);
-
+		case ADD:			return FunctionSignatures.signaturesOf(Punctuator.ADD).acceptingSignature(operandTypes);
+		case SUBTRACT:		return FunctionSignatures.signaturesOf(Punctuator.SUBTRACT).acceptingSignature(operandTypes);
+		case MULTIPLY:		return FunctionSignatures.signaturesOf(Punctuator.MULTIPLY).acceptingSignature(operandTypes);
+		case DIVIDE:		return FunctionSignatures.signaturesOf(Punctuator.MULTIPLY).acceptingSignature(operandTypes);
+		case GREATER:		return FunctionSignatures.signaturesOf(Punctuator.GREATER).acceptingSignature(operandTypes);
+		case LESS:			return FunctionSignatures.signaturesOf(Punctuator.LESS).acceptingSignature(operandTypes);
+		case GREATER_OR_EQ:	return FunctionSignatures.signaturesOf(Punctuator.GREATER_OR_EQ).acceptingSignature(operandTypes);
+		case LESS_OR_EQ:	return FunctionSignatures.signaturesOf(Punctuator.LESS_OR_EQ).acceptingSignature(operandTypes);
+		case EQUAL:			return FunctionSignatures.signaturesOf(Punctuator.EQUAL).acceptingSignature(operandTypes);
+		case NOT_EQUAL:		return FunctionSignatures.signaturesOf(Punctuator.NOT_EQUAL).acceptingSignature(operandTypes);
 		default:
 			return neverMatchedSignature;
 		}
