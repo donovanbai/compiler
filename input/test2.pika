@@ -1,6 +1,5 @@
 exec {
-	const a := _true_.
-	const b := _true_.
-	const c := a == b.
-	print c, _n_.
+	var a := 1.
+	a := 2.
+	print a, _n_.
 }

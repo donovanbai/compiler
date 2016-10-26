@@ -7,6 +7,7 @@ import lexicalAnalyzer.Lextant;
 import logging.PikaLogger;
 import parseTree.ParseNode;
 import parseTree.ParseNodeVisitor;
+import parseTree.nodeTypes.AssignmentNode;
 import parseTree.nodeTypes.BinaryOperatorNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
@@ -26,6 +27,7 @@ import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
 import symbolTable.Binding;
 import symbolTable.Scope;
+import symbolTable.SymbolTable;
 import tokens.LextantToken;
 import tokens.Token;
 
@@ -67,7 +69,7 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	}
 	
 	///////////////////////////////////////////////////////////////////////////
-	// statements and declarations
+	// statements, declarations, assignments
 	@Override
 	public void visitLeave(PrintStatementNode node) {
 	}
@@ -80,7 +82,33 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		node.setType(declarationType);
 		
 		identifier.setType(declarationType);
-		addBinding(identifier, declarationType);
+		String constOrVar = node.getToken().getLexeme();
+		if (constOrVar.equals("const")) addBinding(identifier, declarationType, false);
+		else addBinding(identifier, declarationType, true);
+	}
+	@Override
+	public void visitLeave(AssignmentNode node) {
+		// check if identifier is mutable
+		IdentifierNode identifierNode = (IdentifierNode) node.child(0);
+		String identifier = identifierNode.getToken().getLexeme();
+		SymbolTable table = node.getLocalScope().getSymbolTable();
+		Binding binding = table.lookup(identifier);
+		if (!table.containsKey(identifier) || !binding.isMutable()) {
+			logError("assignment statement contains an immutable identifier at " + node.getToken().getLocation());
+		}
+		else {
+			ParseNode initializer = node.child(1);
+			// check if types match
+			Type identifierType = identifierNode.getType();
+			Type initializerType = initializer.getType();
+			if (identifierType != initializerType) {
+				logError("bad assignment: types don't match at " + node.getToken().getLocation());
+			}
+			else {
+				node.setType(initializerType);
+				
+			}
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -130,12 +158,6 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		node.setType(PrimitiveType.INTEGER);
 	}
 	@Override
-	public void visit(NewlineNode node) {
-	}
-	@Override
-	public void visit(SpaceNode node) {
-	}
-	@Override
 	public void visit(FloatConstantNode node) {
 		node.setType(PrimitiveType.FLOATING);
 	}
@@ -145,6 +167,12 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	}
 	public void visit(StringConstantNode node) {
 		node.setType(PrimitiveType.STRING);
+	}
+	@Override
+	public void visit(NewlineNode node) {
+	}
+	@Override
+	public void visit(SpaceNode node) {
 	}
 	///////////////////////////////////////////////////////////////////////////
 	// IdentifierNodes, with helper methods
@@ -162,9 +190,9 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		ParseNode parent = node.getParent();
 		return (parent instanceof DeclarationNode) && (node == parent.child(0));
 	}
-	private void addBinding(IdentifierNode identifierNode, Type type) {
+	private void addBinding(IdentifierNode identifierNode, Type type, boolean mutable) {
 		Scope scope = identifierNode.getLocalScope();
-		Binding binding = scope.createBinding(identifierNode, type);
+		Binding binding = scope.createBinding(identifierNode, type, mutable);
 		identifierNode.setBinding(binding);
 	}
 	

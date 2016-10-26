@@ -8,6 +8,7 @@ import lexicalAnalyzer.Punctuator;
 import lexicalAnalyzer.Scanner;
 import logging.PikaLogger;
 import parseTree.ParseNode;
+import parseTree.nodeTypes.AssignmentNode;
 import parseTree.nodeTypes.BinaryOperatorNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
@@ -113,11 +114,13 @@ public class Parser {
 		if(startsPrintStatement(nowReading)) {
 			return parsePrintStatement();
 		}
+		if(startsAssignment(nowReading)) {
+			return parseAssignment();
+		}
 		return syntaxErrorNode("statement");
 	}
 	private boolean startsStatement(Token token) {
-		return startsPrintStatement(token) ||
-			   startsDeclaration(token);
+		return startsPrintStatement(token) || startsDeclaration(token) || startsAssignment(token);
 	}
 	
 	// printStmt -> PRINT printExpressionList .
@@ -198,6 +201,7 @@ public class Parser {
 	
 	
 	// declaration -> CONST identifier := expression .
+	//			   -> VAR identifier := expression .
 	private ParseNode parseDeclaration() {
 		if(!startsDeclaration(nowReading)) {
 			return syntaxErrorNode("declaration");
@@ -213,10 +217,25 @@ public class Parser {
 		return DeclarationNode.withChildren(declarationToken, identifier, initializer);
 	}
 	private boolean startsDeclaration(Token token) {
-		return token.isLextant(Keyword.CONST);
+		return token.isLextant(Keyword.CONST) || token.isLextant(Keyword.VAR);
 	}
 
-
+	// assignmentStatement -> target := expression .
+	private ParseNode parseAssignment() {
+		if(!startsAssignment(nowReading)) {
+			return syntaxErrorNode("assignment");
+		}
+		Token assignmentToken = nowReading;
+		ParseNode identifier = parseIdentifier();		
+		expect(Punctuator.ASSIGN);
+		ParseNode initializer = parseExpression();
+		expect(Punctuator.TERMINATOR);
+		
+		return AssignmentNode.withChildren(assignmentToken, identifier, initializer);
+	}
+	private boolean startsAssignment(Token token) {
+		return token instanceof IdentifierToken;
+	}
 	
 	///////////////////////////////////////////////////////////
 	// expressions

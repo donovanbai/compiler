@@ -9,6 +9,7 @@ import asmCodeGenerator.runtime.RunTime;
 import lexicalAnalyzer.Lextant;
 import lexicalAnalyzer.Punctuator;
 import parseTree.*;
+import parseTree.nodeTypes.AssignmentNode;
 import parseTree.nodeTypes.BinaryOperatorNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
@@ -185,7 +186,7 @@ public class ASMCodeGenerator {
 		}
 
 		///////////////////////////////////////////////////////////////////////////
-		// statements and declarations
+		// statements, declarations, assignments
 
 		public void visitLeave(PrintStatementNode node) {
 			newVoidCode(node);
@@ -220,6 +221,25 @@ public class ASMCodeGenerator {
 				code.add(opcodeForStore(type));
 			}
 		}
+		
+		public void visitLeave(AssignmentNode node){
+			newVoidCode(node);
+			if (node.child(1).getType() == PrimitiveType.STRING) {
+				ASMCodeFragment rvalue = removeVoidCode(node.child(1));
+				code.append(rvalue);
+			}
+			else {
+				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
+				ASMCodeFragment rvalue = removeValueCode(node.child(1));
+				
+				code.append(lvalue);
+				code.append(rvalue);
+				
+				Type type = node.getType();
+				code.add(opcodeForStore(type));
+			}
+		}
+		
 		private ASMOpcode opcodeForStore(Type type) {
 			if(type == PrimitiveType.INTEGER) {
 				return StoreI;
