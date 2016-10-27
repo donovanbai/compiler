@@ -93,54 +93,30 @@
         Jump         $$general-runtime-error   
         DLabel       $usable-memory-start      
         DLabel       $global-memory-block      
-        DataZ        3                         
+        DataZ        4                         
         Label        $$main                    
         PushD        $global-memory-block      
         PushI        0                         
         Add                                    %% a
         PushI        1                         
-        StoreC                                 
-        PushD        $global-memory-block      
-        PushI        1                         
-        Add                                    %% b
-        PushI        1                         
-        StoreC                                 
-        PushD        $global-memory-block      
+        PushI        9                         
+        PushI        3                         
+        Subtract                               
+        Add                                    
         PushI        2                         
-        Add                                    %% c
-        Label        -compare-1-arg1           
+        Multiply                               
+        PushI        2                         
+        PushI        3                         
+        Add                                    
+        PushI        4                         
+        Multiply                               
+        Multiply                               
+        StoreI                                 
         PushD        $global-memory-block      
         PushI        0                         
         Add                                    %% a
-        LoadC                                  
-        Label        -compare-1-arg2           
-        PushD        $global-memory-block      
-        PushI        1                         
-        Add                                    %% b
-        LoadC                                  
-        Label        -compare-1-sub            
-        Subtract                               
-        JumpFalse    -compare-1-true           
-        Jump         -compare-1-false          
-        Label        -compare-1-true           
-        PushI        1                         
-        Jump         -compare-1-join           
-        Label        -compare-1-false          
-        PushI        0                         
-        Jump         -compare-1-join           
-        Label        -compare-1-join           
-        StoreC                                 
-        PushD        $global-memory-block      
-        PushI        2                         
-        Add                                    %% c
-        LoadC                                  
-        JumpTrue     -print-boolean-2-true     
-        PushD        $boolean-false-string     
-        Jump         -print-boolean-2-join     
-        Label        -print-boolean-2-true     
-        PushD        $boolean-true-string      
-        Label        -print-boolean-2-join     
-        PushD        $print-format-boolean     
+        LoadI                                  
+        PushD        $print-format-integer     
         Printf                                 
         PushD        $print-format-newline     
         Printf                                 

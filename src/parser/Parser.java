@@ -323,13 +323,21 @@ public class Parser {
 		if(!startsAtomicExpression(nowReading)) {
 			return syntaxErrorNode("atomic expression");
 		}
-		return parseLiteral();
+		if(startsLiteral(nowReading)) {
+			return parseLiteral();
+		}
+		else {
+			readToken();
+			ParseNode result = parseExpression();
+			expect(Punctuator.RRB);
+			return result;
+		}
 	}
 	private boolean startsAtomicExpression(Token token) {
-		return startsLiteral(token);
+		return startsLiteral(token) || isLRB(token);
 	}
 	
-	// literal -> number | identifier | booleanConstant
+	// literal -> integer | float | boolean | char | string | identifier
 	private ParseNode parseLiteral() {
 		if(!startsLiteral(nowReading)) {
 			return syntaxErrorNode("literal");
@@ -407,6 +415,10 @@ public class Parser {
 	
 	private static boolean startsString(Token token) {
 		return token instanceof StringToken;
+	}
+	
+	private static boolean isLRB(Token token) {
+		return token.isLextant(Punctuator.LRB);
 	}
 
 	// identifier (terminal)
