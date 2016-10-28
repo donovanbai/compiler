@@ -97,6 +97,7 @@ public class FunctionSignature {
 		case LESS_OR_EQ:	return FunctionSignatures.signaturesOf(Punctuator.LESS_OR_EQ).acceptingSignature(operandTypes);
 		case EQUAL:			return FunctionSignatures.signaturesOf(Punctuator.EQUAL).acceptingSignature(operandTypes);
 		case NOT_EQUAL:		return FunctionSignatures.signaturesOf(Punctuator.NOT_EQUAL).acceptingSignature(operandTypes);
+		case PIPE:			return FunctionSignatures.signaturesOf(Punctuator.PIPE).acceptingSignature(operandTypes);
 		default:
 			return neverMatchedSignature;
 		}

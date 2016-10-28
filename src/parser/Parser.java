@@ -23,6 +23,11 @@ import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
+import parseTree.nodeTypes.TypeBoolNode;
+import parseTree.nodeTypes.TypeCharNode;
+import parseTree.nodeTypes.TypeFloatNode;
+import parseTree.nodeTypes.TypeIntNode;
+import parseTree.nodeTypes.TypeStringNode;
 import tokens.CharToken;
 import tokens.CommentToken;
 import tokens.FloatToken;
@@ -326,15 +331,32 @@ public class Parser {
 		if(startsLiteral(nowReading)) {
 			return parseLiteral();
 		}
-		else {
+		else if(isLRB(nowReading)){
 			readToken();
 			ParseNode result = parseExpression();
 			expect(Punctuator.RRB);
 			return result;
 		}
+		else {
+			readToken();
+			ParseNode result = parseExpression();
+			Token castToken = nowReading;
+			readToken();
+			Token typeToken = nowReading;
+			readToken();
+			expect(Punctuator.RSB);
+			switch (typeToken.getLexeme()) {
+				case "bool": return BinaryOperatorNode.withChildren(castToken, result, new TypeBoolNode(typeToken));
+				case "char": return BinaryOperatorNode.withChildren(castToken, result, new TypeCharNode(typeToken));
+				case "string": return BinaryOperatorNode.withChildren(castToken, result, new TypeStringNode(typeToken));
+				case "int": return BinaryOperatorNode.withChildren(castToken, result, new TypeIntNode(typeToken));
+				case "float": return BinaryOperatorNode.withChildren(castToken, result, new TypeFloatNode(typeToken));
+				default: return syntaxErrorNode("atomic expression");
+			}
+		}
 	}
 	private boolean startsAtomicExpression(Token token) {
-		return startsLiteral(token) || isLRB(token);
+		return startsLiteral(token) || isLRB(token) || isLSB(token);
 	}
 	
 	// literal -> integer | float | boolean | char | string | identifier
@@ -419,6 +441,10 @@ public class Parser {
 	
 	private static boolean isLRB(Token token) {
 		return token.isLextant(Punctuator.LRB);
+	}
+	
+	private static boolean isLSB(Token token) {
+		return token.isLextant(Punctuator.LSB);
 	}
 
 	// identifier (terminal)

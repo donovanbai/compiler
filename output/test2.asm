@@ -93,28 +93,155 @@
         Jump         $$general-runtime-error   
         DLabel       $usable-memory-start      
         DLabel       $global-memory-block      
-        DataZ        4                         
+        DataZ        33                        
         Label        $$main                    
         PushD        $global-memory-block      
         PushI        0                         
         Add                                    %% a
         PushI        1                         
+        StoreC                                 
+        PushD        $global-memory-block      
+        PushI        1                         
+        Add                                    %% b
+        PushI        99                        
+        StoreC                                 
+        PushD        $global-memory-block      
+        PushI        2                         
+        Add                                    %% c
+        PushI        99                        
+        StoreC                                 
+        PushD        $global-memory-block      
+        PushI        3                         
+        Add                                    %% d
+        PushI        99                        
+        StoreI                                 
+        PushD        $global-memory-block      
+        PushI        7                         
+        Add                                    %% e
+        PushI        0                         
+        StoreC                                 
+        PushD        $global-memory-block      
+        PushI        8                         
+        Add                                    %% f
+        PushI        99                        
+        StoreC                                 
+        PushD        $global-memory-block      
         PushI        9                         
-        PushI        3                         
-        Subtract                               
-        Add                                    
-        PushI        2                         
-        Multiply                               
-        PushI        2                         
-        PushI        3                         
-        Add                                    
-        PushI        4                         
-        Multiply                               
-        Multiply                               
+        Add                                    %% g
+        PushI        1                         
+        ConvertF                               
+        StoreF                                 
+        PushD        $global-memory-block      
+        PushI        17                        
+        Add                                    %% h
+        PushI        1                         
+        StoreI                                 
+        PushD        $global-memory-block      
+        PushI        21                        
+        Add                                    %% i
+        PushF        1.500000                  
+        StoreF                                 
+        PushD        $global-memory-block      
+        PushI        29                        
+        Add                                    %% j
+        PushF        1.500000                  
+        ConvertI                               
         StoreI                                 
         PushD        $global-memory-block      
         PushI        0                         
         Add                                    %% a
+        LoadC                                  
+        JumpTrue     -print-boolean-1-true     
+        PushD        $boolean-false-string     
+        Jump         -print-boolean-1-join     
+        Label        -print-boolean-1-true     
+        PushD        $boolean-true-string      
+        Label        -print-boolean-1-join     
+        PushD        $print-format-boolean     
+        Printf                                 
+        PushD        $print-format-newline     
+        Printf                                 
+        PushD        $global-memory-block      
+        PushI        1                         
+        Add                                    %% b
+        LoadC                                  
+        JumpTrue     -print-boolean-2-true     
+        PushD        $boolean-false-string     
+        Jump         -print-boolean-2-join     
+        Label        -print-boolean-2-true     
+        PushD        $boolean-true-string      
+        Label        -print-boolean-2-join     
+        PushD        $print-format-boolean     
+        Printf                                 
+        PushD        $print-format-newline     
+        Printf                                 
+        PushD        $global-memory-block      
+        PushI        2                         
+        Add                                    %% c
+        LoadC                                  
+        PushD        $print-format-character   
+        Printf                                 
+        PushD        $print-format-newline     
+        Printf                                 
+        PushD        $global-memory-block      
+        PushI        3                         
+        Add                                    %% d
+        LoadI                                  
+        PushD        $print-format-integer     
+        Printf                                 
+        PushD        $print-format-newline     
+        Printf                                 
+        PushD        $global-memory-block      
+        PushI        7                         
+        Add                                    %% e
+        LoadC                                  
+        JumpTrue     -print-boolean-3-true     
+        PushD        $boolean-false-string     
+        Jump         -print-boolean-3-join     
+        Label        -print-boolean-3-true     
+        PushD        $boolean-true-string      
+        Label        -print-boolean-3-join     
+        PushD        $print-format-boolean     
+        Printf                                 
+        PushD        $print-format-newline     
+        Printf                                 
+        PushD        $global-memory-block      
+        PushI        8                         
+        Add                                    %% f
+        LoadC                                  
+        PushD        $print-format-character   
+        Printf                                 
+        PushD        $print-format-newline     
+        Printf                                 
+        PushD        $global-memory-block      
+        PushI        9                         
+        Add                                    %% g
+        LoadF                                  
+        PushF        1.000000                  
+        FMultiply                              
+        PushD        $print-format-floating    
+        Printf                                 
+        PushD        $print-format-newline     
+        Printf                                 
+        PushD        $global-memory-block      
+        PushI        17                        
+        Add                                    %% h
+        LoadI                                  
+        PushD        $print-format-integer     
+        Printf                                 
+        PushD        $print-format-newline     
+        Printf                                 
+        PushD        $global-memory-block      
+        PushI        21                        
+        Add                                    %% i
+        LoadF                                  
+        PushD        $print-format-floating    
+        Printf                                 
+        PushD        $print-format-newline     
+        Printf                                 
+        PushD        $global-memory-block      
+        PushI        29                        
+        Add                                    %% j
         LoadI                                  
         PushD        $print-format-integer     
         Printf                                 

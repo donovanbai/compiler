@@ -284,6 +284,9 @@ public class ASMCodeGenerator {
 			else if (operator == Punctuator.NOT_EQUAL) {
 				visitNotEqualOperatorNode(node, operator);
 			}
+			else if (operator == Punctuator.PIPE) {
+				visitPipeOperatorNode(node, operator);
+			}
 			else {
 				visitNormalBinaryOperatorNode(node);
 			}
@@ -516,6 +519,20 @@ public class ASMCodeGenerator {
 			code.add(Jump, joinLabel);
 			code.add(Label, joinLabel);
 		}
+		private void visitPipeOperatorNode(BinaryOperatorNode node, Lextant operator) {
+			newValueCode(node);
+			ASMCodeFragment arg = removeValueCode(node.child(0));
+			Type type1 = node.child(0).getType();
+			Type type2 = node.child(1).getType();
+			code.append(arg);
+			if (type1 == PrimitiveType.INTEGER && type2 == PrimitiveType.TYPE_FLOAT) {
+				code.add(ConvertF);
+			}
+			else if (type1 == PrimitiveType.FLOATING && type2 == PrimitiveType.TYPE_INT) {
+				code.add(ConvertI);
+			}
+		}
+		
 		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {
 			newValueCode(node);
 			ASMCodeFragment arg1 = removeValueCode(node.child(0));

@@ -33,6 +33,7 @@ public class ParseNode {
 		this.type = node.type;
 		this.scope = node.scope;
 	}
+
 	public Token getToken() {
 		return token;
 	}

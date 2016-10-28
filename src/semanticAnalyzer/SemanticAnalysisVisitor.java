@@ -22,6 +22,11 @@ import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
+import parseTree.nodeTypes.TypeBoolNode;
+import parseTree.nodeTypes.TypeCharNode;
+import parseTree.nodeTypes.TypeFloatNode;
+import parseTree.nodeTypes.TypeIntNode;
+import parseTree.nodeTypes.TypeStringNode;
 import semanticAnalyzer.signatures.FunctionSignature;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
@@ -165,9 +170,31 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	public void visit(CharConstantNode node) {
 		node.setType(PrimitiveType.CHARACTER);
 	}
+	@Override
 	public void visit(StringConstantNode node) {
 		node.setType(PrimitiveType.STRING);
 	}
+	@Override
+	public void visit(TypeBoolNode node){
+		node.setType(PrimitiveType.TYPE_BOOL);
+	}
+	@Override
+	public void visit(TypeCharNode node){
+		node.setType(PrimitiveType.TYPE_CHAR);
+	}
+	@Override
+	public void visit(TypeFloatNode node){
+		node.setType(PrimitiveType.TYPE_FLOAT);
+	}
+	@Override
+	public void visit(TypeIntNode node){
+		node.setType(PrimitiveType.TYPE_INT);
+	}
+	@Override
+	public void visit(TypeStringNode node){
+		node.setType(PrimitiveType.TYPE_STRING);
+	}
+
 	@Override
 	public void visit(NewlineNode node) {
 	}

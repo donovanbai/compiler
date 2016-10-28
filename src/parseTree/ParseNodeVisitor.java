@@ -15,6 +15,11 @@ import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
+import parseTree.nodeTypes.TypeBoolNode;
+import parseTree.nodeTypes.TypeCharNode;
+import parseTree.nodeTypes.TypeFloatNode;
+import parseTree.nodeTypes.TypeIntNode;
+import parseTree.nodeTypes.TypeStringNode;
 
 // Visitor pattern with pre- and post-order visits
 public interface ParseNodeVisitor {
@@ -52,6 +57,11 @@ public interface ParseNodeVisitor {
 	void visit(FloatConstantNode node);
 	void visit(CharConstantNode node);
 	void visit(StringConstantNode node);
+	void visit(TypeBoolNode node);
+	void visit(TypeCharNode node);
+	void visit(TypeFloatNode node);
+	void visit(TypeIntNode node);
+	void visit(TypeStringNode node);
 	
 	public static class Default implements ParseNodeVisitor
 	{
@@ -135,6 +145,21 @@ public interface ParseNodeVisitor {
 			defaultVisitForLeaf(node);
 		}
 		public void visit(StringConstantNode node) {
+			defaultVisitForLeaf(node);
+		}
+		public void visit(TypeBoolNode node) {
+			defaultVisitForLeaf(node);
+		}
+		public void visit(TypeCharNode node) {
+			defaultVisitForLeaf(node);
+		}
+		public void visit(TypeFloatNode node) {
+			defaultVisitForLeaf(node);
+		}
+		public void visit(TypeIntNode node) {
+			defaultVisitForLeaf(node);
+		}
+		public void visit(TypeStringNode node) {
 			defaultVisitForLeaf(node);
 		}
 	}

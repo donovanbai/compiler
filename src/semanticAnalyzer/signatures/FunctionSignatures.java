@@ -118,6 +118,18 @@ public class FunctionSignatures extends ArrayList<FunctionSignature> {
 			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.CHARACTER, PrimitiveType.BOOLEAN),
 			    new FunctionSignature(1, PrimitiveType.BOOLEAN, PrimitiveType.BOOLEAN, PrimitiveType.BOOLEAN)
 		);
+		new FunctionSignatures(Punctuator.PIPE,
+			    new FunctionSignature(1, PrimitiveType.BOOLEAN, PrimitiveType.TYPE_BOOL, PrimitiveType.BOOLEAN),
+			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.TYPE_BOOL, PrimitiveType.BOOLEAN),
+			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.TYPE_CHAR, PrimitiveType.CHARACTER),
+			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER),
+			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_BOOL, PrimitiveType.BOOLEAN),
+			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_CHAR, PrimitiveType.CHARACTER),
+			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
+			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER),
+			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
+			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER)
+		);
 		// First, we use the operator itself (in this case the Punctuator ADD) as the key.
 		// Then, we give that key two signatures: one an (INT x INT -> INT) and the other
 		// a (FLOAT x FLOAT -> FLOAT).  Each signature has a "whichVariant" parameter where
