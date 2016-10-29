@@ -1,6 +1,8 @@
 package asmCodeGenerator;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import asmCodeGenerator.codeStorage.ASMCodeFragment;
@@ -24,6 +26,7 @@ import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
+import semanticAnalyzer.signatures.FunctionSignature;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
 import symbolTable.Binding;
@@ -296,7 +299,7 @@ public class ASMCodeGenerator {
 			else if (operator == Punctuator.PIPE) {
 				visitPipeOperatorNode(node, operator);
 			}
-			else {
+			else {	// +  -  *  /  &&  ||
 				visitNormalBinaryOperatorNode(node);
 			}
 		}
@@ -542,31 +545,23 @@ public class ASMCodeGenerator {
 			}
 		}
 		
-		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {
+		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {	// +  -  *  /  &&  ||
 			newValueCode(node);
 			ASMCodeFragment arg1 = removeValueCode(node.child(0));
-			ASMCodeFragment arg2 = removeValueCode(node.child(1));
+			ASMCodeFragment arg2 = removeValueCode(node.child(1));			
+			code.append(arg1);
+			code.append(arg2);			
+			
 			Type type1 = node.child(0).getType();
 			Type type2 = node.child(1).getType();
-			
-			code.append(arg1);
-			code.append(arg2);
-			
-			ASMOpcode opcode = opcodeForOperator(node.getOperator(), type1, type2);
+			List<Type> childTypes = Arrays.asList(type1, type2);
+			ASMOpcode opcode = opcodeForOperator(node.getOperator(), childTypes);
 			code.add(opcode);							// type-dependent! (opcode is different for floats and for ints)
 		}
-		private ASMOpcode opcodeForOperator(Lextant lextant, Type...types) {
+		private ASMOpcode opcodeForOperator(Lextant lextant, List<Type >types) {
 			assert(lextant instanceof Punctuator);
-			Punctuator punctuator = (Punctuator)lextant;
-			switch(punctuator) {
-			case ADD: 	   		return types[0] == PrimitiveType.FLOATING ? FAdd : Add;
-			case SUBTRACT:		return types[0] == PrimitiveType.FLOATING ? FSubtract : Subtract;
-			case MULTIPLY: 		return types[0] == PrimitiveType.FLOATING ? FMultiply : Multiply;
-			case DIVIDE:		return types[0] == PrimitiveType.FLOATING ? FDivide : Divide;
-			default:
-				assert false : "unimplemented operator in opcodeForOperator";
-			}
-			return null;
+			FunctionSignature signature = FunctionSignature.signatureOf(lextant, types);
+			return (ASMOpcode)signature.getVariant();
 		}
 
 		///////////////////////////////////////////////////////////////////////////

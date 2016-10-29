@@ -263,24 +263,64 @@ public class Parser {
 	
 	///////////////////////////////////////////////////////////
 	// expressions
-	// expr                     -> comparisonExpression
+	// expr						-> orExpression
+	// orExpression				-> andExpression [|| andExpression]*  (left-assoc)
+	// andExpressions           -> comparisonExpression [&& comparisonExpression]*  (left-assoc)
 	// comparisonExpression     -> additiveExpression [> additiveExpression]?
 	// additiveExpression       -> multiplicativeExpression [(+|-) multiplicativeExpression]*  (left-assoc)
 	// multiplicativeExpression -> atomicExpression [(MULT|/) atomicExpression]*  (left-assoc)
 	// atomicExpression         -> literal
 	// literal                  -> intNumber | identifier | booleanConstant
 
-	// expr  -> comparisonExpression
 	private ParseNode parseExpression() {		
 		if(!startsExpression(nowReading)) {
 			return syntaxErrorNode("expression");
 		}
-		return parseComparisonExpression();
+		return parseOrExpression();
 	}
+	
 	private boolean startsExpression(Token token) {
-		return startsComparisonExpression(token);
+		return startsOrExpression(token);
+	}
+	
+	private ParseNode parseOrExpression() {
+		if (!startsOrExpression(nowReading)) {
+			return syntaxErrorNode("or expression");
+		}
+		ParseNode left = parseAndExpression();
+		while (nowReading.isLextant(Punctuator.OR)) {
+			Token orToken = nowReading;
+			readToken();
+			ParseNode right = parseAndExpression();
+			
+			left = BinaryOperatorNode.withChildren(orToken, left, right);
+		}
+		return left;
 	}
 
+	private boolean startsOrExpression(Token token) {
+		return startsAndExpression(token);
+	}
+	
+	private ParseNode parseAndExpression() {
+		if (!startsAndExpression(nowReading)) {
+			return syntaxErrorNode("and expression");
+		}
+		ParseNode left = parseComparisonExpression();
+		while (nowReading.isLextant(Punctuator.AND)) {
+			Token andToken = nowReading;
+			readToken();
+			ParseNode right = parseComparisonExpression();
+			
+			left = BinaryOperatorNode.withChildren(andToken, left, right);
+		}
+		return left;
+	}
+
+	private boolean startsAndExpression(Token token) {
+		return startsComparisonExpression(token);
+	}
+	
 	// comparisonExpression -> additiveExpression [> additiveExpression]?
 	private ParseNode parseComparisonExpression() {
 		if(!startsComparisonExpression(nowReading)) {
@@ -341,6 +381,13 @@ public class Parser {
 	private boolean startsMultiplicativeExpression(Token token) {
 		return startsAtomicExpression(token);
 	}
+	
+	/*private ParseNode parseNotExpression() {
+		
+	}
+	private boolean startsNotExpression(Token token) {
+		return startsAtomicExpression(token);
+	}*/
 	
 	// atomicExpression -> literal
 	private ParseNode parseAtomicExpression() {
