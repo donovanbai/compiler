@@ -9,6 +9,7 @@ import parseTree.ParseNode;
 import parseTree.ParseNodeVisitor;
 import parseTree.nodeTypes.AssignmentNode;
 import parseTree.nodeTypes.BinaryOperatorNode;
+import parseTree.nodeTypes.BlockStmtNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
 import parseTree.nodeTypes.MainBlockNode;
@@ -63,7 +64,6 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		Scope scope = Scope.createProgramScope();
 		node.setScope(scope);
 	}	
-	@SuppressWarnings("unused")
 	private void enterSubscope(ParseNode node) {
 		Scope baseScope = node.getLocalScope();
 		Scope scope = baseScope.createSubscope();
@@ -96,9 +96,25 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		// check if identifier is mutable
 		IdentifierNode identifierNode = (IdentifierNode) node.child(0);
 		String identifier = identifierNode.getToken().getLexeme();
-		SymbolTable table = node.getLocalScope().getSymbolTable();
-		Binding binding = table.lookup(identifier);
-		if (!table.containsKey(identifier) || !binding.isMutable()) {
+
+		boolean foundIdentifier = false;
+		boolean isMutable = false;
+		ParseNode current = node;
+		while (current != null) {
+			SymbolTable table = current.getLocalScope().getSymbolTable();
+			if (table.containsKey(identifier)) {
+				foundIdentifier = true;
+				Binding binding = table.lookup(identifier);
+				if (binding.isMutable()) isMutable = true;
+				break;
+			}
+			current = current.getParent();
+		}
+		
+		if (!foundIdentifier) {
+			logError("undeclared identifier at " + node.getToken().getLocation());
+		}
+		else if (!isMutable) {
 			logError("assignment statement contains an immutable identifier at " + node.getToken().getLocation());
 		}
 		else {
@@ -114,6 +130,14 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 				
 			}
 		}
+	}
+	@Override
+	public void visitEnter(BlockStmtNode node) {
+		enterSubscope(node);
+	}
+	@Override
+	public void visitLeave(BlockStmtNode node) {
+		leaveScope(node);
 	}
 
 	///////////////////////////////////////////////////////////////////////////

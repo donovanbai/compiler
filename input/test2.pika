@@ -1,22 +1,8 @@
 exec {
-	var a := [_true_|bool].
-	var b := [^c^|bool].
-	var c := [^c^|char].
-	var d := [^c^|int].
-	var e := [0|bool].
-	var f := [99|char].
-	var g := [1|float].
-	var h := [1|int].
-	var i := [1.5|float].
-	var j := [1.5|int].
+	var a := 5.
+	{
+		var a := 4.
+		print a, _n_.
+	}
 	print a, _n_.
-	print b, _n_.
-	print c, _n_.
-	print d, _n_.
-	print e, _n_.
-	print f, _n_.
-	print g * 1.0, _n_.
-	print h, _n_.
-	print i, _n_.
-	print j, _n_.
 }

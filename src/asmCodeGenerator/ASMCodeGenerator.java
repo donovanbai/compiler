@@ -11,6 +11,7 @@ import lexicalAnalyzer.Punctuator;
 import parseTree.*;
 import parseTree.nodeTypes.AssignmentNode;
 import parseTree.nodeTypes.BinaryOperatorNode;
+import parseTree.nodeTypes.BlockStmtNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
 import parseTree.nodeTypes.MainBlockNode;
@@ -237,6 +238,14 @@ public class ASMCodeGenerator {
 				
 				Type type = node.getType();
 				code.add(opcodeForStore(type));
+			}
+		}
+		
+		public void visitLeave(BlockStmtNode node){
+			newVoidCode(node);
+			for(ParseNode child : node.getChildren()) {
+				ASMCodeFragment childCode = removeVoidCode(child);
+				code.append(childCode);
 			}
 		}
 		

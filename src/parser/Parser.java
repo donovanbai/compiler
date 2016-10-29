@@ -10,6 +10,7 @@ import logging.PikaLogger;
 import parseTree.ParseNode;
 import parseTree.nodeTypes.AssignmentNode;
 import parseTree.nodeTypes.BinaryOperatorNode;
+import parseTree.nodeTypes.BlockStmtNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
 import parseTree.nodeTypes.DeclarationNode;
@@ -122,10 +123,13 @@ public class Parser {
 		if(startsAssignment(nowReading)) {
 			return parseAssignment();
 		}
+		if(startsBlockStmt(nowReading)) {
+			return parseBlockStmt();
+		}
 		return syntaxErrorNode("statement");
 	}
 	private boolean startsStatement(Token token) {
-		return startsPrintStatement(token) || startsDeclaration(token) || startsAssignment(token);
+		return startsPrintStatement(token) || startsDeclaration(token) || startsAssignment(token) || startsBlockStmt(token);
 	}
 	
 	// printStmt -> PRINT printExpressionList .
@@ -240,6 +244,21 @@ public class Parser {
 	}
 	private boolean startsAssignment(Token token) {
 		return token instanceof IdentifierToken;
+	}
+	
+	private ParseNode parseBlockStmt() {
+		if (!startsBlockStmt(nowReading)) return syntaxErrorNode("block statement");
+		BlockStmtNode blockStmt = new BlockStmtNode(nowReading);
+		expect(Punctuator.OPEN_BRACE);
+		while(startsStatement(nowReading)) {
+			ParseNode statement = parseStatement();
+			blockStmt.appendChild(statement);
+		}
+		expect(Punctuator.CLOSE_BRACE);
+		return blockStmt;
+	}
+	private boolean startsBlockStmt(Token token) {
+		return token.isLextant(Punctuator.OPEN_BRACE);
 	}
 	
 	///////////////////////////////////////////////////////////
