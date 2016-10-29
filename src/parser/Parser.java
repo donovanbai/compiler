@@ -29,6 +29,7 @@ import parseTree.nodeTypes.TypeCharNode;
 import parseTree.nodeTypes.TypeFloatNode;
 import parseTree.nodeTypes.TypeIntNode;
 import parseTree.nodeTypes.TypeStringNode;
+import parseTree.nodeTypes.UnaryOperatorNode;
 import tokens.CharToken;
 import tokens.CommentToken;
 import tokens.FloatToken;
@@ -268,7 +269,8 @@ public class Parser {
 	// andExpressions           -> comparisonExpression [&& comparisonExpression]*  (left-assoc)
 	// comparisonExpression     -> additiveExpression [> additiveExpression]?
 	// additiveExpression       -> multiplicativeExpression [(+|-) multiplicativeExpression]*  (left-assoc)
-	// multiplicativeExpression -> atomicExpression [(MULT|/) atomicExpression]*  (left-assoc)
+	// multiplicativeExpression -> notExpression [(MULT|/) notExpression]*  (left-assoc)
+	// notExpression			-> [!]* atomicExpression (right-assoc)
 	// atomicExpression         -> literal
 	// literal                  -> intNumber | identifier | booleanConstant
 
@@ -362,32 +364,43 @@ public class Parser {
 		return startsMultiplicativeExpression(token);
 	}	
 
-	// multiplicativeExpression -> atomicExpression [(MULT|/) atomicExpression]*  (left-assoc)
+	// multiplicativeExpression -> notExpression [(MULT|/) notExpression]*  (left-assoc)
 	private ParseNode parseMultiplicativeExpression() {
 		if(!startsMultiplicativeExpression(nowReading)) {
 			return syntaxErrorNode("multiplicativeExpression");
 		}
 		
-		ParseNode left = parseAtomicExpression();
+		ParseNode left = parseNotExpression();
 		while(nowReading.isLextant(Punctuator.MULTIPLY) || nowReading.isLextant(Punctuator.DIVIDE)) {
 			Token multiplicativeToken = nowReading;
 			readToken();
-			ParseNode right = parseAtomicExpression();
+			ParseNode right = parseNotExpression();
 			
 			left = BinaryOperatorNode.withChildren(multiplicativeToken, left, right);
 		}
 		return left;
 	}
 	private boolean startsMultiplicativeExpression(Token token) {
-		return startsAtomicExpression(token);
+		return startsNotExpression(token);
 	}
 	
-	/*private ParseNode parseNotExpression() {
-		
+	private ParseNode parseNotExpression() {
+		if(!startsNotExpression(nowReading)) {
+			return syntaxErrorNode("notExpression");
+		}
+		if (nowReading.isLextant(Punctuator.NOT)) {
+			Token notToken = nowReading;
+			readToken();		
+			ParseNode child = parseNotExpression();
+			return UnaryOperatorNode.withChild(notToken, child);
+		}
+		else {
+			return parseAtomicExpression();
+		}
 	}
 	private boolean startsNotExpression(Token token) {
-		return startsAtomicExpression(token);
-	}*/
+		return startsAtomicExpression(token) || token.isLextant(Punctuator.NOT);
+	}
 	
 	// atomicExpression -> literal
 	private ParseNode parseAtomicExpression() {

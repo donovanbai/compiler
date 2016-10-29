@@ -28,13 +28,13 @@ import parseTree.nodeTypes.TypeCharNode;
 import parseTree.nodeTypes.TypeFloatNode;
 import parseTree.nodeTypes.TypeIntNode;
 import parseTree.nodeTypes.TypeStringNode;
+import parseTree.nodeTypes.UnaryOperatorNode;
 import semanticAnalyzer.signatures.FunctionSignature;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
 import symbolTable.Binding;
 import symbolTable.Scope;
 import symbolTable.SymbolTable;
-import tokens.LextantToken;
 import tokens.Token;
 
 class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
@@ -149,7 +149,7 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		ParseNode right = node.child(1);
 		List<Type> childTypes = Arrays.asList(left.getType(), right.getType());
 		
-		Lextant operator = operatorFor(node);
+		Lextant operator = node.getOperator();
 		FunctionSignature signature = FunctionSignature.signatureOf(operator, childTypes);
 		
 		if(signature.accepts(childTypes)) {
@@ -166,9 +166,23 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 			node.setType(PrimitiveType.ERROR);
 		}
 	}
-	private Lextant operatorFor(BinaryOperatorNode node) {
-		LextantToken token = (LextantToken) node.getToken();
-		return token.getLextant();
+	
+	@Override
+	public void visitLeave(UnaryOperatorNode node) {
+		assert node.nChildren() == 1;
+		ParseNode child  = node.child(0);
+		List<Type> childTypes = Arrays.asList(child.getType());
+		
+		Lextant operator = node.getOperator();
+		FunctionSignature signature = FunctionSignature.signatureOf(operator, childTypes);
+		
+		if(signature.accepts(childTypes)) {
+			node.setType(signature.resultType());
+		}
+		else {
+			typeCheckError(node, childTypes);
+			node.setType(PrimitiveType.ERROR);
+		}
 	}
 
 

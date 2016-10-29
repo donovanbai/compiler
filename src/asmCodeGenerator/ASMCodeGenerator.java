@@ -26,6 +26,7 @@ import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
+import parseTree.nodeTypes.UnaryOperatorNode;
 import semanticAnalyzer.signatures.FunctionSignature;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
@@ -279,32 +280,31 @@ public class ASMCodeGenerator {
 			Lextant operator = node.getOperator();
 
 			if(operator == Punctuator.GREATER) {
-				visitGreaterOperatorNode(node, operator);
+				visitGreaterOperatorNode(node);
 			}
 			else if (operator == Punctuator.LESS) {
-				visitLessOperatorNode(node, operator);
+				visitLessOperatorNode(node);
 			}
 			else if (operator == Punctuator.GREATER_OR_EQ) {
-				visitGreaterOrEqOperatorNode(node, operator);
+				visitGreaterOrEqOperatorNode(node);
 			}
 			else if (operator == Punctuator.LESS_OR_EQ) {
-				visitLessOrEqOperatorNode(node, operator);
+				visitLessOrEqOperatorNode(node);
 			}
 			else if (operator == Punctuator.EQUAL) {
-				visitEqualOperatorNode(node, operator);
+				visitEqualOperatorNode(node);
 			}
 			else if (operator == Punctuator.NOT_EQUAL) {
-				visitNotEqualOperatorNode(node, operator);
+				visitNotEqualOperatorNode(node);
 			}
 			else if (operator == Punctuator.PIPE) {
-				visitPipeOperatorNode(node, operator);
+				visitPipeOperatorNode(node);
 			}
 			else {	// +  -  *  /  &&  ||
 				visitNormalBinaryOperatorNode(node);
 			}
 		}
-		private void visitGreaterOperatorNode(BinaryOperatorNode node,
-				Lextant operator) {
+		private void visitGreaterOperatorNode(BinaryOperatorNode node) {
 
 			ASMCodeFragment arg1 = removeValueCode(node.child(0));
 			ASMCodeFragment arg2 = removeValueCode(node.child(1));
@@ -341,8 +341,7 @@ public class ASMCodeGenerator {
 			code.add(Jump, joinLabel);
 			code.add(Label, joinLabel);
 		}
-		private void visitLessOperatorNode(BinaryOperatorNode node,
-				Lextant operator) {
+		private void visitLessOperatorNode(BinaryOperatorNode node) {
 
 			ASMCodeFragment arg1 = removeValueCode(node.child(0));
 			ASMCodeFragment arg2 = removeValueCode(node.child(1));
@@ -379,8 +378,7 @@ public class ASMCodeGenerator {
 			code.add(Jump, joinLabel);
 			code.add(Label, joinLabel);
 		}
-		private void visitGreaterOrEqOperatorNode(BinaryOperatorNode node,
-				Lextant operator) {
+		private void visitGreaterOrEqOperatorNode(BinaryOperatorNode node) {
 
 			ASMCodeFragment arg1 = removeValueCode(node.child(0));
 			ASMCodeFragment arg2 = removeValueCode(node.child(1));
@@ -417,8 +415,7 @@ public class ASMCodeGenerator {
 			code.add(Jump, joinLabel);
 			code.add(Label, joinLabel);
 		}
-		private void visitLessOrEqOperatorNode(BinaryOperatorNode node,
-				Lextant operator) {
+		private void visitLessOrEqOperatorNode(BinaryOperatorNode node) {
 
 			ASMCodeFragment arg1 = removeValueCode(node.child(0));
 			ASMCodeFragment arg2 = removeValueCode(node.child(1));
@@ -455,8 +452,7 @@ public class ASMCodeGenerator {
 			code.add(Jump, joinLabel);
 			code.add(Label, joinLabel);
 		}
-		private void visitEqualOperatorNode(BinaryOperatorNode node,
-				Lextant operator) {
+		private void visitEqualOperatorNode(BinaryOperatorNode node) {
 
 			ASMCodeFragment arg1 = removeValueCode(node.child(0));
 			ASMCodeFragment arg2 = removeValueCode(node.child(1));
@@ -493,8 +489,7 @@ public class ASMCodeGenerator {
 			code.add(Jump, joinLabel);
 			code.add(Label, joinLabel);
 		}
-		private void visitNotEqualOperatorNode(BinaryOperatorNode node,
-				Lextant operator) {
+		private void visitNotEqualOperatorNode(BinaryOperatorNode node) {
 
 			ASMCodeFragment arg1 = removeValueCode(node.child(0));
 			ASMCodeFragment arg2 = removeValueCode(node.child(1));
@@ -531,7 +526,7 @@ public class ASMCodeGenerator {
 			code.add(Jump, joinLabel);
 			code.add(Label, joinLabel);
 		}
-		private void visitPipeOperatorNode(BinaryOperatorNode node, Lextant operator) {
+		private void visitPipeOperatorNode(BinaryOperatorNode node) {
 			newValueCode(node);
 			ASMCodeFragment arg = removeValueCode(node.child(0));
 			Type type1 = node.child(0).getType();
@@ -562,6 +557,21 @@ public class ASMCodeGenerator {
 			assert(lextant instanceof Punctuator);
 			FunctionSignature signature = FunctionSignature.signatureOf(lextant, types);
 			return (ASMOpcode)signature.getVariant();
+		}
+		
+		public void visitLeave(UnaryOperatorNode node) {
+			Lextant operator = node.getOperator();
+
+			if(operator == Punctuator.NOT) {
+				visitNotOperatorNode(node);
+			}
+		}
+		
+		private void visitNotOperatorNode(UnaryOperatorNode node) {
+			newValueCode(node);
+			ASMCodeFragment arg = removeValueCode(node.child(0));			
+			code.append(arg);			
+			code.add(ASMOpcode.BNegate);	
 		}
 
 		///////////////////////////////////////////////////////////////////////////

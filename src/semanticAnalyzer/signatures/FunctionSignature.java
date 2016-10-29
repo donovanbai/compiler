@@ -100,6 +100,7 @@ public class FunctionSignature {
 		case PIPE:			return FunctionSignatures.signaturesOf(Punctuator.PIPE).acceptingSignature(operandTypes);
 		case AND:			return FunctionSignatures.signaturesOf(Punctuator.AND).acceptingSignature(operandTypes);
 		case OR:			return FunctionSignatures.signaturesOf(Punctuator.OR).acceptingSignature(operandTypes);
+		case NOT:			return FunctionSignatures.signaturesOf(Punctuator.NOT).acceptingSignature(operandTypes);
 		default:
 			return neverMatchedSignature;
 		}

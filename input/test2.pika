@@ -1,8 +1,4 @@
 exec {
-	var a := 5.
-	{
-		var a := 4.
-		print a, _n_.
-	}
-	print a, _n_.
+	var b := !!_true_.
+	print b, _n_.
 }
