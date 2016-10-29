@@ -269,7 +269,7 @@ public class Parser {
 	// andExpressions           -> comparisonExpression [&& comparisonExpression]*  (left-assoc)
 	// comparisonExpression     -> additiveExpression [> additiveExpression]?
 	// additiveExpression       -> multiplicativeExpression [(+|-) multiplicativeExpression]*  (left-assoc)
-	// multiplicativeExpression -> notExpression [(MULT|/) notExpression]*  (left-assoc)
+	// multiplicativeExpression -> notExpression [(MULT|/|//) notExpression]*  (left-assoc)
 	// notExpression			-> [!]* atomicExpression (right-assoc)
 	// atomicExpression         -> literal
 	// literal                  -> intNumber | identifier | booleanConstant
@@ -371,7 +371,7 @@ public class Parser {
 		}
 		
 		ParseNode left = parseNotExpression();
-		while(nowReading.isLextant(Punctuator.MULTIPLY) || nowReading.isLextant(Punctuator.DIVIDE)) {
+		while(nowReading.isLextant(Punctuator.MULTIPLY) || nowReading.isLextant(Punctuator.DIVIDE) || nowReading.isLextant(Punctuator.OVER)) {
 			Token multiplicativeToken = nowReading;
 			readToken();
 			ParseNode right = parseNotExpression();

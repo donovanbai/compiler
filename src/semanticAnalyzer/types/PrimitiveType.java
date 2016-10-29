@@ -7,6 +7,7 @@ public enum PrimitiveType implements Type {
 	STRING(4),
 	INTEGER(4),
 	FLOATING(8),
+	RATIONAL(8),
 	TYPE_BOOL(0),
 	TYPE_CHAR(0),
 	TYPE_STRING(0),

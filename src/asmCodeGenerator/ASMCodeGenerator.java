@@ -254,20 +254,23 @@ public class ASMCodeGenerator {
 		}
 		
 		private ASMOpcode opcodeForStore(Type type) {
-			if(type == PrimitiveType.INTEGER) {
+			if (type == PrimitiveType.INTEGER) {
 				return StoreI;
 			}
-			if(type == PrimitiveType.BOOLEAN) {
+			if (type == PrimitiveType.BOOLEAN) {
 				return StoreC;
 			}
-			if(type == PrimitiveType.FLOATING) {
+			if (type == PrimitiveType.FLOATING) {
 				return StoreF;
 			}
-			if(type == PrimitiveType.CHARACTER) {
+			if (type == PrimitiveType.CHARACTER) {
 				return StoreC;
 			}
-			if(type == PrimitiveType.STRING) {
+			if (type == PrimitiveType.STRING) {
 				return Nop;
+			}
+			if (type == PrimitiveType.RATIONAL) {
+				return StoreF;
 			}
 			assert false: "Type " + type + " unimplemented in opcodeForStore()";
 			return null;
@@ -299,6 +302,9 @@ public class ASMCodeGenerator {
 			}
 			else if (operator == Punctuator.PIPE) {
 				visitPipeOperatorNode(node);
+			}
+			else if (operator == Punctuator.OVER) {
+				visitOverOperatorNode(node);
 			}
 			else {	// +  -  *  /  &&  ||
 				visitNormalBinaryOperatorNode(node);
@@ -539,7 +545,13 @@ public class ASMCodeGenerator {
 				code.add(ConvertI);
 			}
 		}
-		
+		private void visitOverOperatorNode(BinaryOperatorNode node) {
+			newValueCode(node);
+			ASMCodeFragment arg1 = removeValueCode(node.child(0));
+			ASMCodeFragment arg2 = removeValueCode(node.child(1));			
+			code.append(arg1);
+			code.append(arg2);	
+		}
 		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {	// +  -  *  /  &&  ||
 			newValueCode(node);
 			ASMCodeFragment arg1 = removeValueCode(node.child(0));
