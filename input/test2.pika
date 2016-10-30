@@ -1,4 +1,4 @@
 exec {
-	var b := !!_true_.
-	print b, _n_.
+	#var b := 40 // 13.
+	print 1 + 1 + 1, _n_.
 }

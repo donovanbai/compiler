@@ -31,6 +31,7 @@ import semanticAnalyzer.signatures.FunctionSignature;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
 import symbolTable.Binding;
+import symbolTable.MemoryLocation;
 import symbolTable.Scope;
 import static asmCodeGenerator.codeStorage.ASMCodeFragment.CodeType.*;
 import static asmCodeGenerator.codeStorage.ASMOpcode.*;
@@ -159,6 +160,9 @@ public class ASMCodeGenerator {
 			else if (node.getType() == PrimitiveType.STRING) {
 				//code.add(LoadC);
 			}
+			else if (node.getType() == PrimitiveType.RATIONAL) {
+				code.add(LoadI);
+			}
 			else {
 				assert false : "node " + node;
 			}
@@ -215,6 +219,19 @@ public class ASMCodeGenerator {
 				ASMCodeFragment rvalue = removeVoidCode(node.child(1));
 				code.append(rvalue);
 			}
+			else if (node.child(1).getType() == PrimitiveType.RATIONAL) {
+				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
+				ASMCodeFragment numerator = removeValueCode(node.child(1).child(0));
+				ASMCodeFragment denominator = removeValueCode(node.child(1).child(1));
+				
+				code.append(lvalue);
+				code.append(numerator);
+				code.add(StoreI);
+				
+				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
+				code.append(denominator);
+				code.add(StoreI);
+			}
 			else {
 				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
 				ASMCodeFragment rvalue = removeValueCode(node.child(1));
@@ -233,6 +250,19 @@ public class ASMCodeGenerator {
 				ASMCodeFragment rvalue = removeVoidCode(node.child(1));
 				code.append(rvalue);
 			}
+			else if (node.child(1).getType() == PrimitiveType.RATIONAL) {
+				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
+				ASMCodeFragment numerator = removeValueCode(node.child(1).child(0));
+				ASMCodeFragment denominator = removeValueCode(node.child(1).child(1));
+				
+				code.append(lvalue);
+				code.append(numerator);
+				code.add(StoreI);
+				
+				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
+				code.append(denominator);
+				code.add(StoreI);
+			}
 			else {
 				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
 				ASMCodeFragment rvalue = removeValueCode(node.child(1));
@@ -243,6 +273,20 @@ public class ASMCodeGenerator {
 				Type type = node.getType();
 				code.add(opcodeForStore(type));
 			}
+		}
+		public void appendAddressOfDenominator(ASMCodeFragment code, IdentifierNode node) {
+			assert node.getType() == PrimitiveType.RATIONAL;
+			MemoryLocation m = node.getBinding().getMemoryLocation();
+			String baseAddress = m.getBaseAddress();
+			int offset = m.getOffset();
+			m.getAccessor().generateAddress(code, baseAddress, offset+4, "");
+		}
+		public void appendAddressOfNumerator(ASMCodeFragment code, IdentifierNode node) {
+			assert node.getType() == PrimitiveType.RATIONAL;
+			MemoryLocation m = node.getBinding().getMemoryLocation();
+			String baseAddress = m.getBaseAddress();
+			int offset = m.getOffset();
+			m.getAccessor().generateAddress(code, baseAddress, offset, "");
 		}
 		
 		public void visitLeave(BlockStmtNode node){
@@ -268,9 +312,6 @@ public class ASMCodeGenerator {
 			}
 			if (type == PrimitiveType.STRING) {
 				return Nop;
-			}
-			if (type == PrimitiveType.RATIONAL) {
-				return StoreF;
 			}
 			assert false: "Type " + type + " unimplemented in opcodeForStore()";
 			return null;
@@ -546,11 +587,17 @@ public class ASMCodeGenerator {
 			}
 		}
 		private void visitOverOperatorNode(BinaryOperatorNode node) {
+			
 			newValueCode(node);
-			ASMCodeFragment arg1 = removeValueCode(node.child(0));
-			ASMCodeFragment arg2 = removeValueCode(node.child(1));			
-			code.append(arg1);
-			code.append(arg2);	
+			ASMCodeFragment numerator = removeValueCode(node.child(0));
+			code.append(numerator);
+			/*code.add(ConvertF); // convert numerator to float
+			code.add(PushF, 256);
+			code.add(FMultiply); // multiply by 2^8 = 256 to shift left 8 bits*/
+			ASMCodeFragment denominator = removeValueCode(node.child(1));			
+			code.append(denominator);
+			/*code.add(ConvertF); // convert denominator to float
+			code.add(FAdd); // add so that the result has numerator in 1st 4 bytes and numerator in last 4 bytes*/
 		}
 		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {	// +  -  *  /  &&  ||
 			newValueCode(node);
