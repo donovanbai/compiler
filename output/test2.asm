@@ -93,15 +93,76 @@
         Jump         $$general-runtime-error   
         DLabel       $usable-memory-start      
         DLabel       $global-memory-block      
-        DataZ        0                         
+        DataZ        8                         
         Label        $$main                    
+        PushD        $global-memory-block      
+        PushI        0                         
+        Add                                    %% a
         PushI        1                         
-        PushI        1                         
-        Add                                    
-        PushI        1                         
-        Add                                    
+        StoreI                                 
+        PushI        -40                       
+        Duplicate                              
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        PushI        13                        
+        Duplicate                              
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Divide                                 
+        Duplicate                              
+        JumpFalse    -compare-1-false          
         PushD        $print-format-integer     
         Printf                                 
+        Jump         -compare-1-join           
+        Label        -compare-1-false          
+        Pop                                    
+        Label        -compare-1-join           
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Remainder                              
+        Duplicate                              
+        JumpFalse    -compare-1-false2         
+        PushI        95                        
+        PushD        $print-format-character   
+        Printf                                 
+        Duplicate                              
+        JumpNeg      -compare-1-true           
+        Jump         -compare-1-join2          
+        Label        -compare-1-true           
+        Negate                                 
+        Label        -compare-1-join2          
+        PushD        $print-format-integer     
+        Printf                                 
+        PushI        47                        
+        PushD        $print-format-character   
+        Printf                                 
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        PushD        $print-format-integer     
+        Printf                                 
+        Jump         -compare-1-join3          
+        Label        -compare-1-false2         
+        Pop                                    
+        Label        -compare-1-join3          
         PushD        $print-format-newline     
         Printf                                 
+        PushD        $global-memory-block      
+        PushI        4                         
+        Add                                    %% b
+        PushI        2                         
+        StoreI                                 
         Halt                                   

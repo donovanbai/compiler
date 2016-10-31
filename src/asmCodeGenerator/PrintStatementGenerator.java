@@ -1,6 +1,7 @@
 package asmCodeGenerator;
 
 import static asmCodeGenerator.codeStorage.ASMOpcode.*;
+
 import parseTree.ParseNode;
 import parseTree.nodeTypes.IdentifierNode;
 import parseTree.nodeTypes.NewlineNode;
@@ -105,7 +106,82 @@ public class PrintStatementGenerator {
 			code.add(Label, join3Label);
 		}
 		else if (node.getType() == PrimitiveType.RATIONAL){
-			// needs work
+			Labeller labeller = new Labeller("compare");
+			String trueLabel = labeller.newLabel("true");
+			String falseLabel  = labeller.newLabel("false");
+			String false2Label  = labeller.newLabel("false2");			
+			String joinLabel  = labeller.newLabel("join");
+			String join2Label  = labeller.newLabel("join2");
+			String join3Label  = labeller.newLabel("join3");
+			
+			String intFormat = printFormat(PrimitiveType.INTEGER);
+			String charFormat = printFormat(PrimitiveType.CHARACTER);
+			
+			
+			code.append(visitor.removeValueCode(node.child(0)));	// get numerator
+			code.add(Duplicate);
+			code.add(Memtop);
+			code.add(PushI, 8);
+			code.add(Subtract);
+			code.add(Exchange);
+			code.add(StoreI);		// save in memory
+			code.append(visitor.removeValueCode(node.child(1)));	// get denominator
+			code.add(Duplicate);
+			code.add(Memtop);
+			code.add(PushI, 4);
+			code.add(Subtract);
+			code.add(Exchange);
+			code.add(StoreI);		// save in memory
+			code.add(Divide);			// result is integer part
+			code.add(Duplicate); 		// duplicate result because JumpFalse will remove from stack
+			code.add(JumpFalse, falseLabel);	// skip printing if integer part is 0
+			code.add(PushD, intFormat);
+			code.add(Printf);			// print integer part
+			code.add(Jump, joinLabel);
+			
+			code.add(Label, falseLabel);
+			code.add(Pop);				// pop leftover "0"
+			
+			code.add(Label, joinLabel);
+			code.add(Memtop);
+			code.add(PushI, 8);
+			code.add(Subtract);
+			code.add(LoadI); 			// load numerator from memory
+			code.add(Memtop);
+			code.add(PushI, 4);
+			code.add(Subtract);
+			code.add(LoadI); 			// load denominator from memory
+			code.add(Remainder);		// result is fractional part
+			code.add(Duplicate);
+			code.add(JumpFalse, false2Label);	// skip printing if fractional part is 0
+			code.add(PushI, '_');
+			code.add(PushD, charFormat);
+			code.add(Printf);				// print '_'
+			code.add(Duplicate);
+			code.add(JumpNeg, trueLabel);	// negate fractional part if it is negative
+			code.add(Jump, join2Label);
+			
+			code.add(Label, trueLabel);
+			code.add(Negate);
+			
+			code.add(Label, join2Label);
+			code.add(PushD, intFormat);
+			code.add(Printf);				// print fractional part
+			code.add(PushI, '/');
+			code.add(PushD, charFormat);
+			code.add(Printf);
+			code.add(Memtop);
+			code.add(PushI, 4);
+			code.add(Subtract);
+			code.add(LoadI); 			// load denominator from memory
+			code.add(PushD, intFormat);
+			code.add(Printf);				// print denominator
+			code.add(Jump, join3Label);
+			
+			code.add(Label, false2Label);
+			code.add(Pop);
+			
+			code.add(Label, join3Label);
 		}
 		else {
 			String format = printFormat(node.getType());
