@@ -697,16 +697,21 @@ public class ASMCodeGenerator {
 		}
 		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {	// +  -  *  /  &&  ||
 			newValueCode(node);
-			ASMCodeFragment arg1 = removeValueCode(node.child(0));
-			ASMCodeFragment arg2 = removeValueCode(node.child(1));			
-			code.append(arg1);
-			code.append(arg2);			
-			
-			Type type1 = node.child(0).getType();
-			Type type2 = node.child(1).getType();
-			List<Type> childTypes = Arrays.asList(type1, type2);
-			ASMOpcode opcode = opcodeForOperator(node.getOperator(), childTypes);
-			code.add(opcode);							// type-dependent! (opcode is different for floats and for ints)
+			if (node.child(0).getType() == PrimitiveType.RATIONAL) {
+				
+			}
+			else {
+				ASMCodeFragment arg1 = removeValueCode(node.child(0));
+				ASMCodeFragment arg2 = removeValueCode(node.child(1));			
+				code.append(arg1);
+				code.append(arg2);			
+				
+				Type type1 = node.child(0).getType();
+				Type type2 = node.child(1).getType();
+				List<Type> childTypes = Arrays.asList(type1, type2);
+				ASMOpcode opcode = opcodeForOperator(node.getOperator(), childTypes);
+				code.add(opcode);							// type-dependent! (opcode is different for floats and for ints)
+			}
 		}
 		private ASMOpcode opcodeForOperator(Lextant lextant, List<Type >types) {
 			assert(lextant instanceof Punctuator);
