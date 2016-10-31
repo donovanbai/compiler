@@ -220,17 +220,65 @@ public class ASMCodeGenerator {
 				code.append(rvalue);
 			}
 			else if (node.child(1).getType() == PrimitiveType.RATIONAL) {
-				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
 				ASMCodeFragment numerator = removeValueCode(node.child(1).child(0));
 				ASMCodeFragment denominator = removeValueCode(node.child(1).child(1));
 				
-				code.append(lvalue);
+				Labeller labeller = new Labeller("gcd");
+				String startLabel = labeller.newLabel("start");
+				String falseLabel = labeller.newLabel("false");
+				String posLabel = labeller.newLabel("pos");
+
+				// compute gcd
 				code.append(numerator);
+				code.add(Duplicate);
+				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
+				code.add(Exchange);
 				code.add(StoreI);
-				
-				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
 				code.append(denominator);
+				code.add(Duplicate);
+				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
+				code.add(Exchange);
+				code.add(StoreI);		// after this, the numerator and denominator should still be on the stack
+								
+				code.add(Label, startLabel);
+				code.add(Duplicate);
+				code.add(Memtop);
+				code.add(PushI, 4);
+				code.add(Subtract);
+				code.add(Exchange);
 				code.add(StoreI);
+				code.add(Duplicate);
+				code.add(JumpFalse, falseLabel);
+				code.add(Exchange);
+				code.add(Memtop);
+				code.add(PushI, 4);
+				code.add(Subtract);
+				code.add(LoadI);
+				code.add(Remainder);
+				code.add(Jump, startLabel);
+				
+				code.add(Label, falseLabel);
+				code.add(Pop);			// after this, only the gcd should be on the stack. negate it if it's negative
+				code.add(Duplicate);
+				code.add(JumpPos, posLabel);
+				code.add(Negate);
+				
+				code.add(Label, posLabel);
+				code.add(Duplicate);
+				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
+				code.add(LoadI);
+				code.add(Exchange);
+				code.add(Divide);
+				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
+				code.add(Exchange);
+				code.add(StoreI);		// store simplified numerator
+				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
+				code.add(LoadI);
+				code.add(Exchange);
+				code.add(Divide);
+				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
+				code.add(Exchange);
+				code.add(StoreI);		// store simplified denominator
 			}
 			else {
 				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
@@ -251,17 +299,65 @@ public class ASMCodeGenerator {
 				code.append(rvalue);
 			}
 			else if (node.child(1).getType() == PrimitiveType.RATIONAL) {
-				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
 				ASMCodeFragment numerator = removeValueCode(node.child(1).child(0));
 				ASMCodeFragment denominator = removeValueCode(node.child(1).child(1));
 				
-				code.append(lvalue);
+				Labeller labeller = new Labeller("gcd");
+				String startLabel = labeller.newLabel("start");
+				String falseLabel = labeller.newLabel("false");
+				String posLabel = labeller.newLabel("pos");
+
+				// compute gcd
 				code.append(numerator);
+				code.add(Duplicate);
+				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
+				code.add(Exchange);
 				code.add(StoreI);
-				
-				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
 				code.append(denominator);
+				code.add(Duplicate);
+				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
+				code.add(Exchange);
+				code.add(StoreI);		// after this, the numerator and denominator should still be on the stack
+								
+				code.add(Label, startLabel);
+				code.add(Duplicate);
+				code.add(Memtop);
+				code.add(PushI, 4);
+				code.add(Subtract);
+				code.add(Exchange);
 				code.add(StoreI);
+				code.add(Duplicate);
+				code.add(JumpFalse, falseLabel);
+				code.add(Exchange);
+				code.add(Memtop);
+				code.add(PushI, 4);
+				code.add(Subtract);
+				code.add(LoadI);
+				code.add(Remainder);
+				code.add(Jump, startLabel);
+				
+				code.add(Label, falseLabel);
+				code.add(Pop);			// after this, only the gcd should be on the stack. negate it if it's negative
+				code.add(Duplicate);
+				code.add(JumpPos, posLabel);
+				code.add(Negate);
+				
+				code.add(Label, posLabel);
+				code.add(Duplicate);
+				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
+				code.add(LoadI);
+				code.add(Exchange);
+				code.add(Divide);
+				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
+				code.add(Exchange);
+				code.add(StoreI);		// store simplified numerator
+				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
+				code.add(LoadI);
+				code.add(Exchange);
+				code.add(Divide);
+				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
+				code.add(Exchange);
+				code.add(StoreI);		// store simplified denominator
 			}
 			else {
 				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	

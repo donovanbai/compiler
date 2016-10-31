@@ -93,47 +93,95 @@
         Jump         $$general-runtime-error   
         DLabel       $usable-memory-start      
         DLabel       $global-memory-block      
-        DataZ        8                         
+        DataZ        0                         
         Label        $$main                    
-        PushD        $global-memory-block      
-        PushI        0                         
-        Add                                    %% a
-        PushI        1                         
-        StoreI                                 
-        PushI        -40                       
-        Duplicate                              
-        Memtop                                 
-        PushI        8                         
-        Subtract                               
-        Exchange                               
-        StoreI                                 
-        PushI        13                        
+        PushI        10                        
         Duplicate                              
         Memtop                                 
         PushI        4                         
         Subtract                               
         Exchange                               
         StoreI                                 
-        Divide                                 
+        PushI        -4                        
+        Duplicate                              
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Label        -compare-1-start          
+        Duplicate                              
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
         Duplicate                              
         JumpFalse    -compare-1-false          
-        PushD        $print-format-integer     
-        Printf                                 
-        Jump         -compare-1-join           
+        Exchange                               
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        LoadI                                  
+        Remainder                              
+        Jump         -compare-1-start          
         Label        -compare-1-false          
         Pop                                    
-        Label        -compare-1-join           
+        Duplicate                              
+        JumpPos      -compare-1-pos            
+        Negate                                 
+        Label        -compare-1-pos            
+        Duplicate                              
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Exchange                               
+        Divide                                 
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
         Memtop                                 
         PushI        8                         
         Subtract                               
         LoadI                                  
+        Exchange                               
+        Divide                                 
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
         Memtop                                 
         PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        LoadI                                  
+        Divide                                 
+        Duplicate                              
+        JumpFalse    -compare-1-false2         
+        PushD        $print-format-integer     
+        Printf                                 
+        Jump         -compare-1-join           
+        Label        -compare-1-false2         
+        Pop                                    
+        Label        -compare-1-join           
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        8                         
         Subtract                               
         LoadI                                  
         Remainder                              
         Duplicate                              
-        JumpFalse    -compare-1-false2         
+        JumpFalse    -compare-1-false3         
         PushI        95                        
         PushD        $print-format-character   
         Printf                                 
@@ -149,20 +197,19 @@
         PushD        $print-format-character   
         Printf                                 
         Memtop                                 
-        PushI        4                         
+        PushI        8                         
         Subtract                               
         LoadI                                  
+        Duplicate                              
+        JumpPos      -compare-1-pos2           
+        Negate                                 
+        Label        -compare-1-pos2           
         PushD        $print-format-integer     
         Printf                                 
         Jump         -compare-1-join3          
-        Label        -compare-1-false2         
+        Label        -compare-1-false3         
         Pop                                    
         Label        -compare-1-join3          
         PushD        $print-format-newline     
         Printf                                 
-        PushD        $global-memory-block      
-        PushI        4                         
-        Add                                    %% b
-        PushI        2                         
-        StoreI                                 
         Halt                                   

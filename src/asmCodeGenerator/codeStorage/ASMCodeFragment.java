@@ -82,12 +82,6 @@ public class ASMCodeFragment {
 		}
 		return chunks.get(chunks.size() - 1);
 	}
-	public int getChunkSize() {	// for debugging
-		return chunks.size();
-	}
-	public List<ASMCodeChunk> getChunks() {	// for debugging
-		return chunks;
-	}
 
 	private void newChunk() {
 		ASMCodeChunk chunk = new ASMCodeChunk();
