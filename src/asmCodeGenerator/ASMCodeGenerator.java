@@ -20,6 +20,7 @@ import parseTree.nodeTypes.MainBlockNode;
 import parseTree.nodeTypes.DeclarationNode;
 import parseTree.nodeTypes.FloatConstantNode;
 import parseTree.nodeTypes.IdentifierNode;
+import parseTree.nodeTypes.IfStmtNode;
 import parseTree.nodeTypes.IntegerConstantNode;
 import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
@@ -27,6 +28,7 @@ import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
+import parseTree.nodeTypes.WhileStmtNode;
 import semanticAnalyzer.signatures.FunctionSignature;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
@@ -393,6 +395,53 @@ public class ASMCodeGenerator {
 			}
 		}
 		
+		public void visitLeave(IfStmtNode node) {
+			newVoidCode(node);
+			
+			Labeller labeller = new Labeller("ifStmt");
+			String joinLabel = labeller.newLabel("join");
+			String elseLabel = labeller.newLabel("else");
+			
+			ASMCodeFragment conditionCode = removeValueCode(node.child(0));
+			code.append(conditionCode);
+			if (node.nChildren() == 2) {	// if there is no else block
+				code.add(JumpFalse, joinLabel);
+			}
+			else {							// if there is an else block
+				code.add(JumpFalse, elseLabel);
+			}
+			
+			ASMCodeFragment thenCode = removeVoidCode(node.child(1));
+			code.append(thenCode);
+			
+			if (node.nChildren() == 3) {	// if there is an else block
+				code.add(Jump, joinLabel);
+				code.add(Label, elseLabel);
+				ASMCodeFragment elseCode = removeVoidCode(node.child(2));
+				code.append(elseCode);
+			}
+			
+			code.add(Label, joinLabel);
+		}
+		
+		public void visitLeave(WhileStmtNode node) {
+			newVoidCode(node);
+			
+			Labeller labeller = new Labeller("whileStmt");
+			String startLabel = labeller.newLabel("start");
+			String joinLabel = labeller.newLabel("join");
+			
+			code.add(Label, startLabel);
+			ASMCodeFragment conditionCode = removeValueCode(node.child(0));
+			code.append(conditionCode);
+			code.add(JumpFalse, joinLabel);
+			
+			ASMCodeFragment doCode = removeVoidCode(node.child(1));
+			code.append(doCode);
+			code.add(Jump, startLabel);
+			code.add(Label, joinLabel);
+		}
+		
 		private ASMOpcode opcodeForStore(Type type) {
 			if (type == PrimitiveType.INTEGER) {
 				return StoreI;
@@ -698,7 +747,7 @@ public class ASMCodeGenerator {
 		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {	// +  -  *  /  &&  ||
 			newValueCode(node);
 			if (node.child(0).getType() == PrimitiveType.RATIONAL) {
-				
+				// needs work
 			}
 			else {
 				ASMCodeFragment arg1 = removeValueCode(node.child(0));

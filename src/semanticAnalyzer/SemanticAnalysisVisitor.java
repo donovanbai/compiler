@@ -17,6 +17,7 @@ import parseTree.nodeTypes.DeclarationNode;
 import parseTree.nodeTypes.ErrorNode;
 import parseTree.nodeTypes.FloatConstantNode;
 import parseTree.nodeTypes.IdentifierNode;
+import parseTree.nodeTypes.IfStmtNode;
 import parseTree.nodeTypes.IntegerConstantNode;
 import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
@@ -29,6 +30,7 @@ import parseTree.nodeTypes.TypeFloatNode;
 import parseTree.nodeTypes.TypeIntNode;
 import parseTree.nodeTypes.TypeStringNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
+import parseTree.nodeTypes.WhileStmtNode;
 import semanticAnalyzer.signatures.FunctionSignature;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
@@ -138,6 +140,22 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	@Override
 	public void visitLeave(BlockStmtNode node) {
 		leaveScope(node);
+	}
+	@Override
+	public void visitEnter(IfStmtNode node) {
+		
+	}
+	@Override
+	public void visitLeave(IfStmtNode node) {
+		
+	}
+	@Override
+	public void visitEnter(WhileStmtNode node) {
+		
+	}
+	@Override
+	public void visitLeave(WhileStmtNode node) {
+		
 	}
 
 	///////////////////////////////////////////////////////////////////////////

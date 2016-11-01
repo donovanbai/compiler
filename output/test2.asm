@@ -93,123 +93,51 @@
         Jump         $$general-runtime-error   
         DLabel       $usable-memory-start      
         DLabel       $global-memory-block      
-        DataZ        0                         
+        DataZ        4                         
         Label        $$main                    
+        PushD        $global-memory-block      
+        PushI        0                         
+        Add                                    %% a
+        PushI        0                         
+        StoreI                                 
+        Label        -whileStmt-2-start        
+        Label        -compare-1-arg1           
+        PushD        $global-memory-block      
+        PushI        0                         
+        Add                                    %% a
+        LoadI                                  
+        Label        -compare-1-arg2           
         PushI        10                        
-        Duplicate                              
-        Memtop                                 
-        PushI        4                         
+        Label        -compare-1-sub            
         Subtract                               
-        Exchange                               
-        StoreI                                 
-        PushI        -4                        
-        Duplicate                              
-        Memtop                                 
-        PushI        8                         
-        Subtract                               
-        Exchange                               
-        StoreI                                 
-        Label        -compare-1-start          
-        Duplicate                              
-        Memtop                                 
-        PushI        12                        
-        Subtract                               
-        Exchange                               
-        StoreI                                 
-        Duplicate                              
-        JumpFalse    -compare-1-false          
-        Exchange                               
-        Memtop                                 
-        PushI        12                        
-        Subtract                               
-        LoadI                                  
-        Remainder                              
-        Jump         -compare-1-start          
-        Label        -compare-1-false          
-        Pop                                    
-        Duplicate                              
-        JumpPos      -compare-1-pos            
-        Negate                                 
-        Label        -compare-1-pos            
-        Duplicate                              
-        Memtop                                 
-        PushI        4                         
-        Subtract                               
-        LoadI                                  
-        Exchange                               
-        Divide                                 
-        Memtop                                 
-        PushI        4                         
-        Subtract                               
-        Exchange                               
-        StoreI                                 
-        Memtop                                 
-        PushI        8                         
-        Subtract                               
-        LoadI                                  
-        Exchange                               
-        Divide                                 
-        Memtop                                 
-        PushI        8                         
-        Subtract                               
-        Exchange                               
-        StoreI                                 
-        Memtop                                 
-        PushI        4                         
-        Subtract                               
-        LoadI                                  
-        Memtop                                 
-        PushI        8                         
-        Subtract                               
-        LoadI                                  
-        Divide                                 
-        Duplicate                              
-        JumpFalse    -compare-1-false2         
-        PushD        $print-format-integer     
-        Printf                                 
-        Jump         -compare-1-join           
-        Label        -compare-1-false2         
-        Pop                                    
-        Label        -compare-1-join           
-        Memtop                                 
-        PushI        4                         
-        Subtract                               
-        LoadI                                  
-        Memtop                                 
-        PushI        8                         
-        Subtract                               
-        LoadI                                  
-        Remainder                              
-        Duplicate                              
-        JumpFalse    -compare-1-false3         
-        PushI        95                        
-        PushD        $print-format-character   
-        Printf                                 
-        Duplicate                              
         JumpNeg      -compare-1-true           
-        Jump         -compare-1-join2          
+        Jump         -compare-1-false          
         Label        -compare-1-true           
-        Negate                                 
-        Label        -compare-1-join2          
-        PushD        $print-format-integer     
-        Printf                                 
-        PushI        47                        
-        PushD        $print-format-character   
-        Printf                                 
-        Memtop                                 
-        PushI        8                         
-        Subtract                               
+        PushI        1                         
+        Jump         -compare-1-join           
+        Label        -compare-1-false          
+        PushI        0                         
+        Jump         -compare-1-join           
+        Label        -compare-1-join           
+        JumpFalse    -whileStmt-2-join         
+        PushD        $global-memory-block      
+        PushI        0                         
+        Add                                    %% a
         LoadI                                  
-        Duplicate                              
-        JumpPos      -compare-1-pos2           
-        Negate                                 
-        Label        -compare-1-pos2           
         PushD        $print-format-integer     
         Printf                                 
-        Jump         -compare-1-join3          
-        Label        -compare-1-false3         
-        Pop                                    
-        Label        -compare-1-join3          
         PushD        $print-format-newline     
         Printf                                 
+        PushD        $global-memory-block      
+        PushI        0                         
+        Add                                    %% a
+        PushD        $global-memory-block      
+        PushI        0                         
+        Add                                    %% a
+        LoadI                                  
+        PushI        1                         
+        Add                                    
+        StoreI                                 
+        Jump         -whileStmt-2-start        
+        Label        -whileStmt-2-join         
         Halt                                   

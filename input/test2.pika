@@ -1,4 +1,7 @@
 exec {
-	var a := 1//3 + 1//3.
-	print a, _n_.
+	var a := 0.
+	while (a < 10) {
+		print a, _n_.
+		a := a + 1.
+	}
 }

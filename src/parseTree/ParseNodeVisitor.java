@@ -10,6 +10,7 @@ import parseTree.nodeTypes.DeclarationNode;
 import parseTree.nodeTypes.ErrorNode;
 import parseTree.nodeTypes.FloatConstantNode;
 import parseTree.nodeTypes.IdentifierNode;
+import parseTree.nodeTypes.IfStmtNode;
 import parseTree.nodeTypes.IntegerConstantNode;
 import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
@@ -22,6 +23,7 @@ import parseTree.nodeTypes.TypeFloatNode;
 import parseTree.nodeTypes.TypeIntNode;
 import parseTree.nodeTypes.TypeStringNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
+import parseTree.nodeTypes.WhileStmtNode;
 
 // Visitor pattern with pre- and post-order visits
 public interface ParseNodeVisitor {
@@ -53,7 +55,12 @@ public interface ParseNodeVisitor {
 	
 	void visitEnter(UnaryOperatorNode node);
 	void visitLeave(UnaryOperatorNode node);
-
+	
+	void visitEnter(IfStmtNode node);
+	void visitLeave(IfStmtNode node);
+	
+	void visitEnter(WhileStmtNode node);
+	void visitLeave(WhileStmtNode node);
 
 	// leaf nodes: visitLeaf only
 	void visit(BooleanConstantNode node);
@@ -136,6 +143,18 @@ public interface ParseNodeVisitor {
 			defaultVisitEnter(node);
 		}
 		public void visitLeave(UnaryOperatorNode node) {
+			defaultVisitLeave(node);
+		}
+		public void visitEnter(IfStmtNode node) {
+			defaultVisitEnter(node);
+		}
+		public void visitLeave(IfStmtNode node) {
+			defaultVisitLeave(node);
+		}
+		public void visitEnter(WhileStmtNode node) {
+			defaultVisitEnter(node);
+		}
+		public void visitLeave(WhileStmtNode node) {
 			defaultVisitLeave(node);
 		}
 		
