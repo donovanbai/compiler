@@ -53,16 +53,17 @@ public class PrintStatementGenerator {
 			String join2Label  = labeller.newLabel("join2");
 			String posLabel = labeller.newLabel("pos");
 			String join3Label  = labeller.newLabel("join3");
+			String negLabel = labeller.newLabel("neg");
 			
 			String intFormat = printFormat(PrimitiveType.INTEGER);
 			String charFormat = printFormat(PrimitiveType.CHARACTER);
 			
 			visitor.appendAddressOfNumerator(code, (IdentifierNode)node);
-			code.add(LoadI);		// load numerator
+			code.add(LoadI);
 			visitor.appendAddressOfDenominator(code, (IdentifierNode)node);
-			code.add(LoadI);		// load denominator
+			code.add(LoadI);
 			code.add(Divide);		// result is integer part
-			code.add(Duplicate); 	// duplicate result because JumpFalse will remove from stack
+			code.add(Duplicate);
 			code.add(JumpFalse, falseLabel);	// skip printing if integer part is 0
 			code.add(PushD, intFormat);
 			code.add(Printf);				// print integer part
@@ -70,6 +71,18 @@ public class PrintStatementGenerator {
 			
 			code.add(Label, falseLabel);
 			code.add(Pop);					// pop leftover "0"
+			visitor.appendAddressOfNumerator(code, (IdentifierNode)node);
+			code.add(LoadI);
+			visitor.appendAddressOfDenominator(code, (IdentifierNode)node);
+			code.add(LoadI);
+			code.add(Multiply);
+			code.add(JumpNeg, negLabel);	// print negative sign in front of fractional part if necessary
+			code.add(Jump, joinLabel);
+			
+			code.add(Label, negLabel);
+			code.add(PushI, '-');
+			code.add(PushD, charFormat);
+			code.add(Printf);	
 			
 			code.add(Label, joinLabel);
 			visitor.appendAddressOfNumerator(code, (IdentifierNode)node);
@@ -114,93 +127,34 @@ public class PrintStatementGenerator {
 		else if (node.getType() == PrimitiveType.RATIONAL){
 			Labeller labeller = new Labeller("compare");
 			String trueLabel = labeller.newLabel("true");
-			String falseLabel  = labeller.newLabel("false");
 			String false2Label  = labeller.newLabel("false2");	
 			String false3Label  = labeller.newLabel("false3");	
 			String joinLabel  = labeller.newLabel("join");
 			String join2Label  = labeller.newLabel("join2");
-			String posLabel = labeller.newLabel("pos");
 			String pos2Label = labeller.newLabel("pos2");
 			String join3Label  = labeller.newLabel("join3");
-			String startLabel = labeller.newLabel("start");		
+			String negLabel = labeller.newLabel("neg");
 			
 			String intFormat = printFormat(PrimitiveType.INTEGER);
 			String charFormat = printFormat(PrimitiveType.CHARACTER);		
 			
-			code.append(visitor.removeValueCode(node.child(0)));	// get numerator
-			code.add(Duplicate);
+			code.append(visitor.removeValueCode(node));
+			code.add(Duplicate);		// n, d, d
 			code.add(Memtop);
 			code.add(PushI, 4);
 			code.add(Subtract);
 			code.add(Exchange);
-			code.add(StoreI);		// save numerator in memtop-4
-			code.append(visitor.removeValueCode(node.child(1)));	// get denominator
+			code.add(StoreI); 			// n, d				m-4: d
+			code.add(Exchange);
 			code.add(Duplicate);
 			code.add(Memtop);
 			code.add(PushI, 8);
 			code.add(Subtract);
 			code.add(Exchange);
-			code.add(StoreI);		// save denominator in memtop-8
-				
-			// compute gcd(a, b)						
-			code.add(Label, startLabel);
-			code.add(Duplicate);
-			code.add(Memtop);
-			code.add(PushI, 12);
-			code.add(Subtract);
+			code.add(StoreI); 			// d, n				m-8: n
 			code.add(Exchange);
-			code.add(StoreI);		// store b in memtop-12
-			code.add(Duplicate);
-			code.add(JumpFalse, falseLabel);
-			code.add(Exchange);
-			code.add(Memtop);
-			code.add(PushI, 12);
-			code.add(Subtract);
-			code.add(LoadI);
-			code.add(Remainder);
-			code.add(Jump, startLabel);
-			
-			code.add(Label, falseLabel);
-			code.add(Pop);			// after this, only the gcd should be on the stack. negate it if it's negative
-			code.add(Duplicate);
-			code.add(JumpPos, posLabel);
-			code.add(Negate);
-			
-			code.add(Label, posLabel);
-			code.add(Duplicate);
-			code.add(Memtop);
-			code.add(PushI, 4);
-			code.add(Subtract);
-			code.add(LoadI);
-			code.add(Exchange);
-			code.add(Divide);		// stack: gcd, simplified numerator
-			code.add(Memtop);
-			code.add(PushI, 4);
-			code.add(Subtract);
-			code.add(Exchange);
-			code.add(StoreI);		// store simplified numerator
-			code.add(Memtop);
-			code.add(PushI, 8);
-			code.add(Subtract);
-			code.add(LoadI);
-			code.add(Exchange);
-			code.add(Divide);		// stack: simplified denominator
-			code.add(Memtop);
-			code.add(PushI, 8);
-			code.add(Subtract);
-			code.add(Exchange);
-			code.add(StoreI);		// store simplified denominator			
-			
-			code.add(Memtop);
-			code.add(PushI, 4);
-			code.add(Subtract);
-			code.add(LoadI);
-			code.add(Memtop);
-			code.add(PushI, 8);
-			code.add(Subtract);
-			code.add(LoadI);
 			code.add(Divide);			// result is integer part
-			code.add(Duplicate); 		// duplicate result because JumpFalse will remove from stack
+			code.add(Duplicate);
 			code.add(JumpFalse, false2Label);	// skip printing if integer part is 0
 			code.add(PushD, intFormat);
 			code.add(Printf);			// print integer part
@@ -208,14 +162,30 @@ public class PrintStatementGenerator {
 			
 			code.add(Label, false2Label);
 			code.add(Pop);				// pop leftover "0"
-			
-			code.add(Label, joinLabel);
 			code.add(Memtop);
 			code.add(PushI, 4);
 			code.add(Subtract);
-			code.add(LoadI); 			// load numerator from memory
+			code.add(LoadI);
 			code.add(Memtop);
 			code.add(PushI, 8);
+			code.add(Subtract);
+			code.add(LoadI);
+			code.add(Multiply);
+			code.add(JumpNeg, negLabel);	// print negative sign in front of fractional part if necessary
+			code.add(Jump, joinLabel);
+			
+			code.add(Label, negLabel);
+			code.add(PushI, '-');
+			code.add(PushD, charFormat);
+			code.add(Printf);
+			
+			code.add(Label, joinLabel);
+			code.add(Memtop);
+			code.add(PushI, 8);
+			code.add(Subtract);
+			code.add(LoadI); 			// load numerator from memory
+			code.add(Memtop);
+			code.add(PushI, 4);
 			code.add(Subtract);
 			code.add(LoadI); 			// load denominator from memory
 			code.add(Remainder);		// result is fractional part
@@ -238,7 +208,7 @@ public class PrintStatementGenerator {
 			code.add(PushD, charFormat);
 			code.add(Printf);
 			code.add(Memtop);
-			code.add(PushI, 8);
+			code.add(PushI, 4);
 			code.add(Subtract);
 			code.add(LoadI); 			// load denominator from memory. negate it if it's negative
 			code.add(Duplicate);

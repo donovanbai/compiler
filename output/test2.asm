@@ -93,51 +93,329 @@
         Jump         $$general-runtime-error   
         DLabel       $usable-memory-start      
         DLabel       $global-memory-block      
-        DataZ        4                         
+        DataZ        8                         
         Label        $$main                    
         PushD        $global-memory-block      
         PushI        0                         
-        Add                                    %% a
-        PushI        0                         
-        StoreI                                 
-        Label        -whileStmt-2-start        
-        Label        -compare-1-arg1           
-        PushD        $global-memory-block      
-        PushI        0                         
-        Add                                    %% a
-        LoadI                                  
-        Label        -compare-1-arg2           
-        PushI        10                        
-        Label        -compare-1-sub            
-        Subtract                               
-        JumpNeg      -compare-1-true           
-        Jump         -compare-1-false          
-        Label        -compare-1-true           
+        Add                                    
         PushI        1                         
-        Jump         -compare-1-join           
-        Label        -compare-1-false          
-        PushI        0                         
-        Jump         -compare-1-join           
-        Label        -compare-1-join           
-        JumpFalse    -whileStmt-2-join         
+        PushI        3                         
+        Duplicate                              
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Exchange                               
+        Duplicate                              
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Label        -rational-1-start         
+        Duplicate                              
+        Memtop                                 
+        PushI        16                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Duplicate                              
+        JumpFalse    -rational-1-false         
+        Exchange                               
+        Memtop                                 
+        PushI        16                        
+        Subtract                               
+        LoadI                                  
+        Remainder                              
+        Jump         -rational-1-start         
+        Label        -rational-1-false         
+        Pop                                    
+        Duplicate                              
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        LoadI                                  
+        Exchange                               
+        Divide                                 
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        LoadI                                  
+        Divide                                 
+        PushI        1                         
+        PushI        6                         
+        Duplicate                              
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Exchange                               
+        Duplicate                              
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Label        -rational-2-start         
+        Duplicate                              
+        Memtop                                 
+        PushI        16                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Duplicate                              
+        JumpFalse    -rational-2-false         
+        Exchange                               
+        Memtop                                 
+        PushI        16                        
+        Subtract                               
+        LoadI                                  
+        Remainder                              
+        Jump         -rational-2-start         
+        Label        -rational-2-false         
+        Pop                                    
+        Duplicate                              
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        LoadI                                  
+        Exchange                               
+        Divide                                 
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        LoadI                                  
+        Divide                                 
+        Exchange                               
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Duplicate                              
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Exchange                               
+        Duplicate                              
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Multiply                               
+        Memtop                                 
+        PushI        16                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        LoadI                                  
+        Label        -rational-3-start         
+        Duplicate                              
+        Memtop                                 
+        PushI        20                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Duplicate                              
+        JumpFalse    -rational-3-false         
+        Exchange                               
+        Memtop                                 
+        PushI        20                        
+        Subtract                               
+        LoadI                                  
+        Remainder                              
+        Jump         -rational-3-start         
+        Label        -rational-3-false         
+        Pop                                    
+        Memtop                                 
+        PushI        16                        
+        Subtract                               
+        LoadI                                  
+        Exchange                               
+        Divide                                 
+        Duplicate                              
+        Memtop                                 
+        PushI        20                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        LoadI                                  
+        Divide                                 
+        Multiply                               
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        20                        
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        LoadI                                  
+        Divide                                 
+        Multiply                               
+        Subtract                               
+        Duplicate                              
+        Memtop                                 
+        PushI        24                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Memtop                                 
+        PushI        20                        
+        Subtract                               
+        LoadI                                  
+        Label        -rational-3-start2        
+        Duplicate                              
+        Memtop                                 
+        PushI        28                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Duplicate                              
+        JumpFalse    -rational-3-false2        
+        Exchange                               
+        Memtop                                 
+        PushI        28                        
+        Subtract                               
+        LoadI                                  
+        Remainder                              
+        Jump         -rational-3-start2        
+        Label        -rational-3-false2        
+        Pop                                    
+        Duplicate                              
+        Memtop                                 
+        PushI        28                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Memtop                                 
+        PushI        24                        
+        Subtract                               
+        LoadI                                  
+        Exchange                               
+        Divide                                 
+        Memtop                                 
+        PushI        20                        
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        28                        
+        Subtract                               
+        LoadI                                  
+        Divide                                 
+        PushD        $global-memory-block      
+        PushI        4                         
+        Add                                    
+        Exchange                               
+        StoreI                                 
+        StoreI                                 
         PushD        $global-memory-block      
         PushI        0                         
-        Add                                    %% a
+        Add                                    
         LoadI                                  
+        PushD        $global-memory-block      
+        PushI        4                         
+        Add                                    
+        LoadI                                  
+        Divide                                 
+        Duplicate                              
+        JumpFalse    -compare-4-false          
         PushD        $print-format-integer     
         Printf                                 
-        PushD        $print-format-newline     
+        Jump         -compare-4-join           
+        Label        -compare-4-false          
+        Pop                                    
+        PushD        $global-memory-block      
+        PushI        0                         
+        Add                                    
+        LoadI                                  
+        PushD        $global-memory-block      
+        PushI        4                         
+        Add                                    
+        LoadI                                  
+        Multiply                               
+        JumpNeg      -compare-4-neg            
+        Jump         -compare-4-join           
+        Label        -compare-4-neg            
+        PushI        45                        
+        PushD        $print-format-character   
+        Printf                                 
+        Label        -compare-4-join           
+        PushD        $global-memory-block      
+        PushI        0                         
+        Add                                    
+        LoadI                                  
+        PushD        $global-memory-block      
+        PushI        4                         
+        Add                                    
+        LoadI                                  
+        Remainder                              
+        Duplicate                              
+        JumpFalse    -compare-4-false2         
+        PushI        95                        
+        PushD        $print-format-character   
+        Printf                                 
+        Duplicate                              
+        JumpNeg      -compare-4-true           
+        Jump         -compare-4-join2          
+        Label        -compare-4-true           
+        Negate                                 
+        Label        -compare-4-join2          
+        PushD        $print-format-integer     
+        Printf                                 
+        PushI        47                        
+        PushD        $print-format-character   
         Printf                                 
         PushD        $global-memory-block      
-        PushI        0                         
-        Add                                    %% a
-        PushD        $global-memory-block      
-        PushI        0                         
-        Add                                    %% a
-        LoadI                                  
-        PushI        1                         
+        PushI        4                         
         Add                                    
-        StoreI                                 
-        Jump         -whileStmt-2-start        
-        Label        -whileStmt-2-join         
+        LoadI                                  
+        Duplicate                              
+        JumpPos      -compare-4-pos            
+        Negate                                 
+        Label        -compare-4-pos            
+        PushD        $print-format-integer     
+        Printf                                 
+        Jump         -compare-4-join3          
+        Label        -compare-4-false2         
+        Pop                                    
+        Label        -compare-4-join3          
+        PushD        $print-format-newline     
+        Printf                                 
         Halt                                   

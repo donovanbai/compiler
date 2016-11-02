@@ -162,9 +162,9 @@ public class ASMCodeGenerator {
 			else if (node.getType() == PrimitiveType.STRING) {
 				//code.add(LoadC);
 			}
-			else if (node.getType() == PrimitiveType.RATIONAL) {
+			/*else if (node.getType() == PrimitiveType.RATIONAL) {
 				code.add(LoadI);
-			}
+			}*/
 			else {
 				assert false : "node " + node;
 			}
@@ -222,65 +222,13 @@ public class ASMCodeGenerator {
 				code.append(rvalue);
 			}
 			else if (node.child(1).getType() == PrimitiveType.RATIONAL) {
-				ASMCodeFragment numerator = removeValueCode(node.child(1).child(0));
-				ASMCodeFragment denominator = removeValueCode(node.child(1).child(1));
-				
-				Labeller labeller = new Labeller("gcd");
-				String startLabel = labeller.newLabel("start");
-				String falseLabel = labeller.newLabel("false");
-				String posLabel = labeller.newLabel("pos");
-
-				// compute gcd
-				code.append(numerator);
-				code.add(Duplicate);
 				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
+				ASMCodeFragment rvalue = removeValueCode(node.child(1));
+				code.append(rvalue);
+				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
 				code.add(Exchange);
 				code.add(StoreI);
-				code.append(denominator);
-				code.add(Duplicate);
-				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
-				code.add(Exchange);
-				code.add(StoreI);		// after this, the numerator and denominator should still be on the stack
-								
-				code.add(Label, startLabel);
-				code.add(Duplicate);
-				code.add(Memtop);
-				code.add(PushI, 4);
-				code.add(Subtract);
-				code.add(Exchange);
 				code.add(StoreI);
-				code.add(Duplicate);
-				code.add(JumpFalse, falseLabel);
-				code.add(Exchange);
-				code.add(Memtop);
-				code.add(PushI, 4);
-				code.add(Subtract);
-				code.add(LoadI);
-				code.add(Remainder);
-				code.add(Jump, startLabel);
-				
-				code.add(Label, falseLabel);
-				code.add(Pop);			// after this, only the gcd should be on the stack. negate it if it's negative
-				code.add(Duplicate);
-				code.add(JumpPos, posLabel);
-				code.add(Negate);
-				
-				code.add(Label, posLabel);
-				code.add(Duplicate);
-				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
-				code.add(LoadI);
-				code.add(Exchange);
-				code.add(Divide);
-				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
-				code.add(Exchange);
-				code.add(StoreI);		// store simplified numerator
-				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
-				code.add(LoadI);
-				code.add(Exchange);
-				code.add(Divide);
-				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
-				code.add(Exchange);
-				code.add(StoreI);		// store simplified denominator
 			}
 			else {
 				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
@@ -301,65 +249,13 @@ public class ASMCodeGenerator {
 				code.append(rvalue);
 			}
 			else if (node.child(1).getType() == PrimitiveType.RATIONAL) {
-				ASMCodeFragment numerator = removeValueCode(node.child(1).child(0));
-				ASMCodeFragment denominator = removeValueCode(node.child(1).child(1));
-				
-				Labeller labeller = new Labeller("gcd");
-				String startLabel = labeller.newLabel("start");
-				String falseLabel = labeller.newLabel("false");
-				String posLabel = labeller.newLabel("pos");
-
-				// compute gcd
-				code.append(numerator);
-				code.add(Duplicate);
 				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
+				ASMCodeFragment rvalue = removeValueCode(node.child(1));
+				code.append(rvalue);
+				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
 				code.add(Exchange);
 				code.add(StoreI);
-				code.append(denominator);
-				code.add(Duplicate);
-				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
-				code.add(Exchange);
-				code.add(StoreI);		// after this, the numerator and denominator should still be on the stack
-								
-				code.add(Label, startLabel);
-				code.add(Duplicate);
-				code.add(Memtop);
-				code.add(PushI, 4);
-				code.add(Subtract);
-				code.add(Exchange);
 				code.add(StoreI);
-				code.add(Duplicate);
-				code.add(JumpFalse, falseLabel);
-				code.add(Exchange);
-				code.add(Memtop);
-				code.add(PushI, 4);
-				code.add(Subtract);
-				code.add(LoadI);
-				code.add(Remainder);
-				code.add(Jump, startLabel);
-				
-				code.add(Label, falseLabel);
-				code.add(Pop);			// after this, only the gcd should be on the stack. negate it if it's negative
-				code.add(Duplicate);
-				code.add(JumpPos, posLabel);
-				code.add(Negate);
-				
-				code.add(Label, posLabel);
-				code.add(Duplicate);
-				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
-				code.add(LoadI);
-				code.add(Exchange);
-				code.add(Divide);
-				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
-				code.add(Exchange);
-				code.add(StoreI);		// store simplified numerator
-				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
-				code.add(LoadI);
-				code.add(Exchange);
-				code.add(Divide);
-				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
-				code.add(Exchange);
-				code.add(StoreI);		// store simplified denominator
 			}
 			else {
 				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
@@ -688,7 +584,7 @@ public class ASMCodeGenerator {
 			
 			Labeller labeller = new Labeller("compare");
 			
-			String startLabel = labeller.newLabel("arg1");
+			String arg1Label = labeller.newLabel("arg1");
 			String arg2Label  = labeller.newLabel("arg2");
 			String subLabel   = labeller.newLabel("sub");
 			String trueLabel  = labeller.newLabel("true");
@@ -696,7 +592,7 @@ public class ASMCodeGenerator {
 			String joinLabel  = labeller.newLabel("join");
 			
 			newValueCode(node);
-			code.add(Label, startLabel);
+			code.add(Label, arg1Label);
 			code.append(arg1);
 			code.add(Label, arg2Label);
 			code.append(arg2);
@@ -731,23 +627,234 @@ public class ASMCodeGenerator {
 				code.add(ConvertI);
 			}
 		}
-		private void visitOverOperatorNode(BinaryOperatorNode node) {
-			
+		private void visitOverOperatorNode(BinaryOperatorNode node) {			
 			newValueCode(node);
+			
+			Labeller labeller = new Labeller("rational");					
+			String startLabel = labeller.newLabel("start");
+			String falseLabel = labeller.newLabel("false");
+			
 			ASMCodeFragment numerator = removeValueCode(node.child(0));
 			code.append(numerator);
-			/*code.add(ConvertF); // convert numerator to float
-			code.add(PushF, 256);
-			code.add(FMultiply); // multiply by 2^8 = 256 to shift left 8 bits*/
 			ASMCodeFragment denominator = removeValueCode(node.child(1));			
-			code.append(denominator);
-			/*code.add(ConvertF); // convert denominator to float
-			code.add(FAdd); // add so that the result has numerator in 1st 4 bytes and numerator in last 4 bytes*/
+			code.append(denominator);		// n, d
+			code.add(Duplicate);			// n, d, d
+			code.add(Memtop);
+			code.add(PushI, 4);								
+			code.add(Subtract);				// n, d, d, m-4
+			code.add(Exchange); 			// n, d, m-4, d
+			code.add(StoreI); 				// n, d					m-4: d
+			code.add(Exchange);				// d, n
+			code.add(Duplicate); 			// d, n, n
+			code.add(Memtop);
+			code.add(PushI, 8);								
+			code.add(Subtract);				// d, n, n, m-8
+			code.add(Exchange);				// d, n, m-8, n
+			code.add(StoreI);				// d, n					m-8: n
+			
+			// compute gcd(n,d)
+			code.add(Label, startLabel);
+			code.add(Duplicate);
+			code.add(Memtop);
+			code.add(PushI, 16);								
+			code.add(Subtract);
+			code.add(Exchange);
+			code.add(StoreI);
+			code.add(Duplicate);
+			code.add(JumpFalse, falseLabel);
+			code.add(Exchange);
+			code.add(Memtop);
+			code.add(PushI, 16);
+			code.add(Subtract);
+			code.add(LoadI);
+			code.add(Remainder);
+			code.add(Jump, startLabel);
+			
+			code.add(Label, falseLabel);
+			code.add(Pop);			// gcd
+			code.add(Duplicate); 	// gcd, gcd
+			code.add(Memtop);
+			code.add(PushI, 12);								
+			code.add(Subtract);		// gcd, gcd, m-12
+			code.add(Exchange); 	// gcd, m-12, gcd
+			code.add(StoreI); 		// gcd					m-12: gcd
+			code.add(Memtop);
+			code.add(PushI, 8);								
+			code.add(Subtract);		// gcd, m-8
+			code.add(LoadI); 		// gcd, n
+			code.add(Exchange);		// n, gcd
+			code.add(Divide); 		// N
+			code.add(Memtop);
+			code.add(PushI, 4);								
+			code.add(Subtract);		// N, m-4
+			code.add(LoadI); 		// N, d
+			code.add(Memtop);
+			code.add(PushI, 12);								
+			code.add(Subtract);		// N, d, m-12
+			code.add(LoadI);		// N, d, gcd
+			code.add(Divide); 		// N, D
 		}
 		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {	// +  -  *  /  &&  ||
 			newValueCode(node);
 			if (node.child(0).getType() == PrimitiveType.RATIONAL) {
-				// needs work
+			Lextant operator = node.getOperator();
+				if (operator == Punctuator.ADD || operator == Punctuator.SUBTRACT) {
+					// need to find the lowest common denominator. lcd(d1,d2) = d1*d2/gcd(d1,d2)
+					
+					Labeller labeller = new Labeller("rational");					
+					String startLabel = labeller.newLabel("start");
+					String start2Label = labeller.newLabel("start2");
+					String falseLabel = labeller.newLabel("false");
+					String false2Label = labeller.newLabel("false2");
+					
+					ASMCodeFragment arg1 = removeValueCode(node.child(0));
+					ASMCodeFragment arg2 = removeValueCode(node.child(1));
+					code.append(arg1);		// n1, d1
+					code.append(arg2); 		// n1, d1, n2, d2
+					code.add(Exchange); 	// n1, d1, d2, n2
+					code.add(Memtop);
+					code.add(PushI, 4);
+					code.add(Subtract); 	// n1, d1, d2, n2, m-4
+					code.add(Exchange); 	// n1, d1, d2, m-4, n2
+					code.add(StoreI); 		// n1, d1, d2					m-4: n2
+					code.add(Duplicate); 	// n1, d1, d2, d2
+					code.add(Memtop);
+					code.add(PushI, 8);
+					code.add(Subtract); 	// n1, d1, d2, d2, m-8
+					code.add(Exchange); 	// n1, d1, d2, m-8, d2
+					code.add(StoreI);		// n1, d1, d2					m-8: d2
+					code.add(Exchange); 	// n1, d2, d1
+					code.add(Duplicate); 	// n1, d2, d1, d1
+					code.add(Memtop);
+					code.add(PushI, 12);
+					code.add(Subtract);		// n1, d2, d1, d1, m-12
+					code.add(Exchange); 	// n1, d2, d1, m-12, d1
+					code.add(StoreI); 		// n1, d2, d1					m-12: d1
+					code.add(Multiply);		// n1, d1*d2
+					code.add(Memtop);
+					code.add(PushI, 16);
+					code.add(Subtract);		// n1, d1*d2, m-16
+					code.add(Exchange); 	// n1, m-16, d1*d2
+					code.add(StoreI); 		// n1							m-16: d1*d2
+					
+					code.add(Memtop);
+					code.add(PushI, 12);
+					code.add(Subtract); 	// n1, m-12
+					code.add(LoadI); 		// n1, d1
+					code.add(Memtop);
+					code.add(PushI, 8);
+					code.add(Subtract); 	// n1, d1, m-8
+					code.add(LoadI); 		// n1, d1, d2
+					
+					// compute gcd(d1,d2)
+					code.add(Label, startLabel);
+					code.add(Duplicate);
+					code.add(Memtop);
+					code.add(PushI, 20);								
+					code.add(Subtract);
+					code.add(Exchange);
+					code.add(StoreI);
+					code.add(Duplicate);
+					code.add(JumpFalse, falseLabel);
+					code.add(Exchange);
+					code.add(Memtop);
+					code.add(PushI, 20);
+					code.add(Subtract);
+					code.add(LoadI);
+					code.add(Remainder);
+					code.add(Jump, startLabel);
+					
+					code.add(Label, falseLabel);
+					code.add(Pop);			// n1, gcd(d1,d2)
+					code.add(Memtop);
+					code.add(PushI, 16);
+					code.add(Subtract); 	// n1, gcd(d1,d2), m-16
+					code.add(LoadI); 		// n1, gcd(d1,d2), d1*d2
+					code.add(Exchange); 	// n1, d1*d2, gcd(d1,d2)
+					code.add(Divide); 		// n1, lcd
+					code.add(Duplicate); 	// n1, lcd, lcd
+					code.add(Memtop);
+					code.add(PushI, 20);
+					code.add(Subtract);		// n1, lcd, lcd, m-20
+					code.add(Exchange); 	// n1, lcd, m-20, lcd
+					code.add(StoreI);		// n1, lcd						m-20: lcd
+					
+					// calculate new numerators then add them. N1 = n1 * (lcd/d1). N2 = n2 * (lcd/d2)
+					code.add(Memtop);
+					code.add(PushI, 12);
+					code.add(Subtract);		// n1, lcd, m-12
+					code.add(LoadI); 		// n1, lcd, d1
+					code.add(Divide); 		// n1, lcd/d1
+					code.add(Multiply); 	// N1
+					code.add(Memtop);
+					code.add(PushI, 4);
+					code.add(Subtract);		// N1, m-4
+					code.add(LoadI); 		// N1, n2
+					code.add(Memtop);
+					code.add(PushI, 20);
+					code.add(Subtract);		// N1, n2, m-20
+					code.add(LoadI); 		// N1, n2, lcd
+					code.add(Memtop);
+					code.add(PushI, 8);
+					code.add(Subtract);		// N1, n2, lcd, m-8
+					code.add(LoadI);		// N1, n2, lcd, d2
+					code.add(Divide); 		// N1, n2, lcd/d2
+					code.add(Multiply); 	// N1, N2
+					if (operator == Punctuator.ADD) code.add(Add);
+					else code.add(Subtract);
+					code.add(Duplicate); 	// n, n
+					code.add(Memtop);
+					code.add(PushI, 24);
+					code.add(Subtract);		// n, n, m-24
+					code.add(Exchange); 	// n, m-24, n
+					code.add(StoreI); 		// n					m-24: n
+					code.add(Memtop);
+					code.add(PushI, 20);
+					code.add(Subtract);		// n, m-20
+					code.add(LoadI); 		// n, lcd
+					
+					// simplify. calculate gcd first
+					code.add(Label, start2Label);
+					code.add(Duplicate);
+					code.add(Memtop);
+					code.add(PushI, 28);								
+					code.add(Subtract);
+					code.add(Exchange);
+					code.add(StoreI);
+					code.add(Duplicate);
+					code.add(JumpFalse, false2Label);
+					code.add(Exchange);
+					code.add(Memtop);
+					code.add(PushI, 28);
+					code.add(Subtract);
+					code.add(LoadI);
+					code.add(Remainder);
+					code.add(Jump, start2Label);
+					
+					code.add(Label, false2Label);
+					code.add(Pop);			// gcd
+					code.add(Duplicate); 	// gcd, gcd
+					code.add(Memtop);
+					code.add(PushI, 28);
+					code.add(Subtract);		// gcd, gcd, m-28
+					code.add(Exchange);		// gcd, m-28, gcd
+					code.add(StoreI); 		// gcd					m-28: gcd
+					code.add(Memtop);
+					code.add(PushI, 24);
+					code.add(Subtract);		// gcd, m-24
+					code.add(LoadI); 		// gcd, n
+					code.add(Exchange); 	// n, gcd
+					code.add(Divide); 		// finalN
+					code.add(Memtop);
+					code.add(PushI, 20);
+					code.add(Subtract);		// finalN, m-20
+					code.add(LoadI); 		// finalN, lcd
+					code.add(Memtop);
+					code.add(PushI, 28);
+					code.add(Subtract);		// finalN, lcd, m-28
+					code.add(LoadI); 		// finalN, lcd, gcd
+					code.add(Divide); 		// finalN, finalD
+				}
 			}
 			else {
 				ASMCodeFragment arg1 = removeValueCode(node.child(0));
