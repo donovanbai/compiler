@@ -630,14 +630,12 @@ public class ASMCodeGenerator {
 		private void visitOverOperatorNode(BinaryOperatorNode node) {			
 			newValueCode(node);
 			
-			Labeller labeller = new Labeller("rational");					
-			String startLabel = labeller.newLabel("start");
-			String falseLabel = labeller.newLabel("false");
-			
 			ASMCodeFragment numerator = removeValueCode(node.child(0));
-			code.append(numerator);
-			ASMCodeFragment denominator = removeValueCode(node.child(1));			
+			ASMCodeFragment denominator = removeValueCode(node.child(1));
+			code.append(numerator);			
 			code.append(denominator);		// n, d
+			code.add(Duplicate);
+			code.add(JumpFalse, RunTime.ZERO_DENOMINATOR_RUNTIME_ERROR);
 			code.add(Duplicate);			// n, d, d
 			code.add(Memtop);
 			code.add(PushI, 4);								
@@ -652,218 +650,136 @@ public class ASMCodeGenerator {
 			code.add(Exchange);				// d, n, m-8, n
 			code.add(StoreI);				// d, n					m-8: n
 			
-			// compute gcd(n,d)
-			code.add(Label, startLabel);
-			code.add(Duplicate);
-			code.add(Memtop);
-			code.add(PushI, 16);								
-			code.add(Subtract);
-			code.add(Exchange);
-			code.add(StoreI);
-			code.add(Duplicate);
-			code.add(JumpFalse, falseLabel);
-			code.add(Exchange);
-			code.add(Memtop);
-			code.add(PushI, 16);
-			code.add(Subtract);
-			code.add(LoadI);
-			code.add(Remainder);
-			code.add(Jump, startLabel);
-			
-			code.add(Label, falseLabel);
-			code.add(Pop);			// gcd
-			code.add(Duplicate); 	// gcd, gcd
-			code.add(Memtop);
-			code.add(PushI, 12);								
-			code.add(Subtract);		// gcd, gcd, m-12
-			code.add(Exchange); 	// gcd, m-12, gcd
-			code.add(StoreI); 		// gcd					m-12: gcd
-			code.add(Memtop);
-			code.add(PushI, 8);								
-			code.add(Subtract);		// gcd, m-8
-			code.add(LoadI); 		// gcd, n
-			code.add(Exchange);		// n, gcd
-			code.add(Divide); 		// N
-			code.add(Memtop);
-			code.add(PushI, 4);								
-			code.add(Subtract);		// N, m-4
-			code.add(LoadI); 		// N, d
-			code.add(Memtop);
-			code.add(PushI, 12);								
-			code.add(Subtract);		// N, d, m-12
-			code.add(LoadI);		// N, d, gcd
-			code.add(Divide); 		// N, D
+			simplifyRational(12, 8, 4);
 		}
 		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {	// +  -  *  /  &&  ||
 			newValueCode(node);
-			if (node.child(0).getType() == PrimitiveType.RATIONAL) {
 			Lextant operator = node.getOperator();
+			if (node.child(0).getType() == PrimitiveType.RATIONAL) {			
 				if (operator == Punctuator.ADD || operator == Punctuator.SUBTRACT) {
-					// need to find the lowest common denominator. lcd(d1,d2) = d1*d2/gcd(d1,d2)
+					// a/b + c/d = (ad+cb)/bd
 					
+					ASMCodeFragment arg1 = removeValueCode(node.child(0));
+					ASMCodeFragment arg2 = removeValueCode(node.child(1));
+					code.append(arg1);		// a, b
+					code.append(arg2); 		// a, b, c, d
+					code.add(Memtop);
+					code.add(PushI, 4);
+					code.add(Subtract);		// a, b, c, d, m-4
+					code.add(Exchange); 	// a, b, c, m-4, d
+					code.add(StoreI); 		// a, b, c				m-4: d
+					code.add(Memtop);
+					code.add(PushI, 8);
+					code.add(Subtract);		// a, b, c, m-8
+					code.add(Exchange); 	// a, b, m-8, c
+					code.add(StoreI);		// a, b					m-8: c
+					code.add(Memtop);
+					code.add(PushI, 12);
+					code.add(Subtract);		// a, b, m-12
+					code.add(Exchange); 	// a, m-12, b
+					code.add(StoreI);		// a					m-12: b
+					code.add(Memtop);
+					code.add(PushI, 4);
+					code.add(Subtract);		// a, m-4
+					code.add(LoadI); 		// a, d
+					code.add(Multiply); 	// ad
+					code.add(Memtop);
+					code.add(PushI, 8);
+					code.add(Subtract);		// ad, m-8
+					code.add(LoadI); 		// ad, c
+					code.add(Memtop);
+					code.add(PushI, 12);
+					code.add(Subtract);		// ad, c, m-12
+					code.add(LoadI); 		// ad, c, b
+					code.add(Multiply);		// ad, cb
+					if (operator == Punctuator.ADD) code.add(Add);
+					else code.add(Subtract);
+					code.add(Memtop);
+					code.add(PushI, 12);
+					code.add(Subtract);		// ad+cb, m-12
+					code.add(LoadI); 		// ad+cb, b
+					code.add(Memtop);
+					code.add(PushI, 4);
+					code.add(Subtract);		// ad+cb, b, m-4
+					code.add(LoadI); 		// ad+cb, b, d
+					code.add(Multiply); 	// ad+cb, bd
+					code.add(Duplicate); 	// ad+cb, bd, bd
+					code.add(Memtop);
+					code.add(PushI, 16);
+					code.add(Subtract);		// ad+cb, bd, bd, m-16
+					code.add(Exchange); 	// ad+cb, bd, m-16, bd
+					code.add(StoreI); 		// ad+cb, bd				m-16: bd
+					code.add(Exchange); 	// bd, ad+cb
+					code.add(Duplicate); 	// bd, ad+cb, ad+cb
+					code.add(Memtop);
+					code.add(PushI, 20);
+					code.add(Subtract);
+					code.add(Exchange);
+					code.add(StoreI); 		// bd, ad+cb				m-20: ad+cb
+					
+					simplifyRational(24, 20, 16);
+				}
+				else {	// if dividing, just swap n2 and d2 before multiplying
 					Labeller labeller = new Labeller("rational");					
-					String startLabel = labeller.newLabel("start");
-					String start2Label = labeller.newLabel("start2");
-					String falseLabel = labeller.newLabel("false");
-					String false2Label = labeller.newLabel("false2");
-					
 					ASMCodeFragment arg1 = removeValueCode(node.child(0));
 					ASMCodeFragment arg2 = removeValueCode(node.child(1));
 					code.append(arg1);		// n1, d1
 					code.append(arg2); 		// n1, d1, n2, d2
-					code.add(Exchange); 	// n1, d1, d2, n2
+					if (operator == Punctuator.DIVIDE) code.add(Exchange);
 					code.add(Memtop);
 					code.add(PushI, 4);
-					code.add(Subtract); 	// n1, d1, d2, n2, m-4
-					code.add(Exchange); 	// n1, d1, d2, m-4, n2
-					code.add(StoreI); 		// n1, d1, d2					m-4: n2
-					code.add(Duplicate); 	// n1, d1, d2, d2
+					code.add(Subtract);		// n1, d1, n2, d2, m-4
+					code.add(Exchange); 	// n1, d1, n2, m-4, d2
+					code.add(StoreI); 		// n1, d1, n2				m-4: d2
+					code.add(Exchange); 	// n1, n2, d1
 					code.add(Memtop);
 					code.add(PushI, 8);
-					code.add(Subtract); 	// n1, d1, d2, d2, m-8
-					code.add(Exchange); 	// n1, d1, d2, m-8, d2
-					code.add(StoreI);		// n1, d1, d2					m-8: d2
-					code.add(Exchange); 	// n1, d2, d1
-					code.add(Duplicate); 	// n1, d2, d1, d1
-					code.add(Memtop);
-					code.add(PushI, 12);
-					code.add(Subtract);		// n1, d2, d1, d1, m-12
-					code.add(Exchange); 	// n1, d2, d1, m-12, d1
-					code.add(StoreI); 		// n1, d2, d1					m-12: d1
-					code.add(Multiply);		// n1, d1*d2
-					code.add(Memtop);
-					code.add(PushI, 16);
-					code.add(Subtract);		// n1, d1*d2, m-16
-					code.add(Exchange); 	// n1, m-16, d1*d2
-					code.add(StoreI); 		// n1							m-16: d1*d2
-					
-					code.add(Memtop);
-					code.add(PushI, 12);
-					code.add(Subtract); 	// n1, m-12
-					code.add(LoadI); 		// n1, d1
+					code.add(Subtract);		// n1, n2, d1, m-8
+					code.add(Exchange); 	// n1, n2, m-8, d1
+					code.add(StoreI); 		// n1, n2					m-8: d1
+					code.add(Multiply); 	// N
 					code.add(Memtop);
 					code.add(PushI, 8);
-					code.add(Subtract); 	// n1, d1, m-8
-					code.add(LoadI); 		// n1, d1, d2
-					
-					// compute gcd(d1,d2)
-					code.add(Label, startLabel);
-					code.add(Duplicate);
-					code.add(Memtop);
-					code.add(PushI, 20);								
-					code.add(Subtract);
-					code.add(Exchange);
-					code.add(StoreI);
-					code.add(Duplicate);
-					code.add(JumpFalse, falseLabel);
-					code.add(Exchange);
-					code.add(Memtop);
-					code.add(PushI, 20);
-					code.add(Subtract);
-					code.add(LoadI);
-					code.add(Remainder);
-					code.add(Jump, startLabel);
-					
-					code.add(Label, falseLabel);
-					code.add(Pop);			// n1, gcd(d1,d2)
-					code.add(Memtop);
-					code.add(PushI, 16);
-					code.add(Subtract); 	// n1, gcd(d1,d2), m-16
-					code.add(LoadI); 		// n1, gcd(d1,d2), d1*d2
-					code.add(Exchange); 	// n1, d1*d2, gcd(d1,d2)
-					code.add(Divide); 		// n1, lcd
-					code.add(Duplicate); 	// n1, lcd, lcd
-					code.add(Memtop);
-					code.add(PushI, 20);
-					code.add(Subtract);		// n1, lcd, lcd, m-20
-					code.add(Exchange); 	// n1, lcd, m-20, lcd
-					code.add(StoreI);		// n1, lcd						m-20: lcd
-					
-					// calculate new numerators then add them. N1 = n1 * (lcd/d1). N2 = n2 * (lcd/d2)
-					code.add(Memtop);
-					code.add(PushI, 12);
-					code.add(Subtract);		// n1, lcd, m-12
-					code.add(LoadI); 		// n1, lcd, d1
-					code.add(Divide); 		// n1, lcd/d1
-					code.add(Multiply); 	// N1
+					code.add(Subtract);		// N, m-8
+					code.add(LoadI); 		// N, d1
 					code.add(Memtop);
 					code.add(PushI, 4);
-					code.add(Subtract);		// N1, m-4
-					code.add(LoadI); 		// N1, n2
+					code.add(Subtract);		// N, d1, m-4
+					code.add(LoadI);		// N, d1, d2
+					code.add(Multiply); 	// N, D
+					code.add(Duplicate); 	// N, D, D
 					code.add(Memtop);
-					code.add(PushI, 20);
-					code.add(Subtract);		// N1, n2, m-20
-					code.add(LoadI); 		// N1, n2, lcd
+					code.add(PushI, 12);
+					code.add(Subtract);		// N, D, D, m-12
+					code.add(Exchange); 	// N, D, m-12, D
+					code.add(StoreI); 		// N, D					m-12: D
+					code.add(Exchange); 	// D, N
+					code.add(Duplicate); 	// D, N, N
 					code.add(Memtop);
-					code.add(PushI, 8);
-					code.add(Subtract);		// N1, n2, lcd, m-8
-					code.add(LoadI);		// N1, n2, lcd, d2
-					code.add(Divide); 		// N1, n2, lcd/d2
-					code.add(Multiply); 	// N1, N2
-					if (operator == Punctuator.ADD) code.add(Add);
-					else code.add(Subtract);
-					code.add(Duplicate); 	// n, n
-					code.add(Memtop);
-					code.add(PushI, 24);
-					code.add(Subtract);		// n, n, m-24
-					code.add(Exchange); 	// n, m-24, n
-					code.add(StoreI); 		// n					m-24: n
-					code.add(Memtop);
-					code.add(PushI, 20);
-					code.add(Subtract);		// n, m-20
-					code.add(LoadI); 		// n, lcd
+					code.add(PushI, 16);
+					code.add(Subtract);		// D, N, N, m-16
+					code.add(Exchange);		// D, N, m-16, N
+					code.add(StoreI);		// D, N					m-16: N
 					
-					// simplify. calculate gcd first
-					code.add(Label, start2Label);
-					code.add(Duplicate);
-					code.add(Memtop);
-					code.add(PushI, 28);								
-					code.add(Subtract);
-					code.add(Exchange);
-					code.add(StoreI);
-					code.add(Duplicate);
-					code.add(JumpFalse, false2Label);
-					code.add(Exchange);
-					code.add(Memtop);
-					code.add(PushI, 28);
-					code.add(Subtract);
-					code.add(LoadI);
-					code.add(Remainder);
-					code.add(Jump, start2Label);
-					
-					code.add(Label, false2Label);
-					code.add(Pop);			// gcd
-					code.add(Duplicate); 	// gcd, gcd
-					code.add(Memtop);
-					code.add(PushI, 28);
-					code.add(Subtract);		// gcd, gcd, m-28
-					code.add(Exchange);		// gcd, m-28, gcd
-					code.add(StoreI); 		// gcd					m-28: gcd
-					code.add(Memtop);
-					code.add(PushI, 24);
-					code.add(Subtract);		// gcd, m-24
-					code.add(LoadI); 		// gcd, n
-					code.add(Exchange); 	// n, gcd
-					code.add(Divide); 		// finalN
-					code.add(Memtop);
-					code.add(PushI, 20);
-					code.add(Subtract);		// finalN, m-20
-					code.add(LoadI); 		// finalN, lcd
-					code.add(Memtop);
-					code.add(PushI, 28);
-					code.add(Subtract);		// finalN, lcd, m-28
-					code.add(LoadI); 		// finalN, lcd, gcd
-					code.add(Divide); 		// finalN, finalD
+					simplifyRational(20, 16, 12);
 				}
 			}
 			else {
 				ASMCodeFragment arg1 = removeValueCode(node.child(0));
 				ASMCodeFragment arg2 = removeValueCode(node.child(1));			
 				code.append(arg1);
-				code.append(arg2);			
-				
+				code.append(arg2);
 				Type type1 = node.child(0).getType();
 				Type type2 = node.child(1).getType();
+				if (operator == Punctuator.DIVIDE && type1 == PrimitiveType.INTEGER) {
+					code.add(Duplicate);
+					code.add(JumpFalse, RunTime.INTEGER_DIVIDE_BY_ZERO_RUNTIME_ERROR);
+				}
+				else if (operator == Punctuator.DIVIDE && type1 == PrimitiveType.FLOATING) {
+					code.add(Duplicate);
+					code.add(JumpFZero, RunTime.FLOATING_DIVIDE_BY_ZERO_RUNTIME_ERROR);
+				}
+							
 				List<Type> childTypes = Arrays.asList(type1, type2);
 				ASMOpcode opcode = opcodeForOperator(node.getOperator(), childTypes);
 				code.add(opcode);							// type-dependent! (opcode is different for floats and for ints)
@@ -932,6 +848,54 @@ public class ASMCodeGenerator {
 				code.add(DataC, asciiVal);
 			}
 			code.add(DataC, 0);
+		}
+		private void simplifyRational(int tempOffset, int nOffset, int dOffset) {
+			// simplifies numerator and denominator already on stack
+		
+			Labeller labeller = new Labeller("gcd");					
+			String startLabel = labeller.newLabel("start");
+			String falseLabel = labeller.newLabel("false");
+			
+			code.add(Label, startLabel);
+			code.add(Duplicate);
+			code.add(Memtop);
+			code.add(PushI, tempOffset);								
+			code.add(Subtract);
+			code.add(Exchange);
+			code.add(StoreI);
+			code.add(Duplicate);
+			code.add(JumpFalse, falseLabel);
+			code.add(Exchange);
+			code.add(Memtop);
+			code.add(PushI, tempOffset);
+			code.add(Subtract);
+			code.add(LoadI);
+			code.add(Remainder);
+			code.add(Jump, startLabel);
+			
+			code.add(Label, falseLabel);
+			code.add(Pop);			// gcd
+			code.add(Duplicate); 	// gcd, gcd
+			code.add(Memtop);
+			code.add(PushI, tempOffset);								
+			code.add(Subtract);
+			code.add(Exchange);
+			code.add(StoreI); 		// gcd					m-12: gcd
+			code.add(Memtop);
+			code.add(PushI, nOffset);								
+			code.add(Subtract);
+			code.add(LoadI); 		// gcd, n
+			code.add(Exchange);		// n, gcd
+			code.add(Divide); 		// N
+			code.add(Memtop);
+			code.add(PushI, dOffset);								
+			code.add(Subtract);
+			code.add(LoadI); 		// N, d
+			code.add(Memtop);
+			code.add(PushI, tempOffset);								
+			code.add(Subtract);
+			code.add(LoadI);		// N, d, gcd
+			code.add(Divide); 		// N, D
 		}
 	}
 

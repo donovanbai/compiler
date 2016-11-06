@@ -171,13 +171,7 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		FunctionSignature signature = FunctionSignature.signatureOf(operator, childTypes);
 		
 		if(signature.accepts(childTypes)) {
-			if (node.getToken().getLexeme() == "/" && Double.parseDouble(node.child(1).getToken().getLexeme()) == 0) {
-				divisionByZeroError(node);
-				node.setType(PrimitiveType.ERROR);
-			}
-			else {
 				node.setType(signature.resultType());
-			}
 		}
 		else {
 			typeCheckError(node, childTypes);
@@ -287,10 +281,6 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		
 		logError("operator " + token.getLexeme() + " not defined for types " 
 				 + operandTypes  + " at " + token.getLocation());	
-	}
-	private void divisionByZeroError(ParseNode node) {
-		Token token = node.getToken();
-		logError("division by 0 at " + token.getLocation());
 	}
 	private void logError(String message) {
 		PikaLogger log = PikaLogger.getLogger("compiler.semanticAnalyzer");

@@ -19,6 +19,8 @@ public class RunTime {
 	
 	public static final String GENERAL_RUNTIME_ERROR = "$$general-runtime-error";
 	public static final String INTEGER_DIVIDE_BY_ZERO_RUNTIME_ERROR = "$$i-divide-by-zero";
+	public static final String FLOATING_DIVIDE_BY_ZERO_RUNTIME_ERROR = "$$f-divide-by-zero";
+	public static final String ZERO_DENOMINATOR_RUNTIME_ERROR = "$$zero-denominator";
 
 	private ASMCodeFragment environmentASM() {
 		ASMCodeFragment result = new ASMCodeFragment(GENERATES_VOID);
@@ -67,6 +69,8 @@ public class RunTime {
 		
 		generalRuntimeError(frag);
 		integerDivideByZeroError(frag);
+		floatingDivideByZeroError(frag);
+		zeroDenominatorError(frag);
 		
 		return frag;
 	}
@@ -92,7 +96,26 @@ public class RunTime {
 		frag.add(PushD, intDivideByZeroMessage);
 		frag.add(Jump, GENERAL_RUNTIME_ERROR);
 	}
-	
+	private void floatingDivideByZeroError(ASMCodeFragment frag) {
+		String floatDivideByZeroMessage = "$errors-float-divide-by-zero";
+		
+		frag.add(DLabel, floatDivideByZeroMessage);
+		frag.add(DataS, "floating divide by zero");
+		
+		frag.add(Label, FLOATING_DIVIDE_BY_ZERO_RUNTIME_ERROR);
+		frag.add(PushD, floatDivideByZeroMessage);
+		frag.add(Jump, GENERAL_RUNTIME_ERROR);
+	}
+	private void zeroDenominatorError(ASMCodeFragment frag) {
+		String errorMessage = "$errors-zero-denominator";
+		
+		frag.add(DLabel, errorMessage);
+		frag.add(DataS, "denominator is zero");
+		
+		frag.add(Label, ZERO_DENOMINATOR_RUNTIME_ERROR);
+		frag.add(PushD, errorMessage);
+		frag.add(Jump, GENERAL_RUNTIME_ERROR);
+	}
 	
 	public static ASMCodeFragment getEnvironment() {
 		RunTime rt = new RunTime();
