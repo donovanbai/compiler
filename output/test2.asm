@@ -147,11 +147,11 @@
         DLabel       $global-memory-block      
         DataZ        0                         
         Label        $$main                    
-        PushI        1                         
-        PushI        1                         
-        Add                                    
-        PushI        1                         
-        Add                                    
+        PushF        1.500000                  
+        PushI        9                         
+        ConvertF                               
+        FMultiply                              
+        ConvertI                               
         PushD        $print-format-integer     
         Printf                                 
         PushD        $print-format-newline     

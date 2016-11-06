@@ -13,6 +13,7 @@ public enum PrimitiveType implements Type {
 	TYPE_STRING(0),
 	TYPE_INT(0),
 	TYPE_FLOAT(0),
+	TYPE_RAT(0),
 	ERROR(0),			// use as a value when a syntax error has occurred
 	NO_TYPE(0, "");		// use as a value when no type has been assigned.
 	

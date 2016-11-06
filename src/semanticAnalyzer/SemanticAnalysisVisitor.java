@@ -28,6 +28,7 @@ import parseTree.nodeTypes.TypeBoolNode;
 import parseTree.nodeTypes.TypeCharNode;
 import parseTree.nodeTypes.TypeFloatNode;
 import parseTree.nodeTypes.TypeIntNode;
+import parseTree.nodeTypes.TypeRatNode;
 import parseTree.nodeTypes.TypeStringNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
 import parseTree.nodeTypes.WhileStmtNode;
@@ -243,6 +244,10 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	@Override
 	public void visit(TypeStringNode node){
 		node.setType(PrimitiveType.TYPE_STRING);
+	}
+	@Override
+	public void visit(TypeRatNode node){
+		node.setType(PrimitiveType.TYPE_RAT);
 	}
 
 	@Override

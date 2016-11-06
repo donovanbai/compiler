@@ -21,6 +21,7 @@ import parseTree.nodeTypes.TypeBoolNode;
 import parseTree.nodeTypes.TypeCharNode;
 import parseTree.nodeTypes.TypeFloatNode;
 import parseTree.nodeTypes.TypeIntNode;
+import parseTree.nodeTypes.TypeRatNode;
 import parseTree.nodeTypes.TypeStringNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
 import parseTree.nodeTypes.WhileStmtNode;
@@ -77,6 +78,7 @@ public interface ParseNodeVisitor {
 	void visit(TypeFloatNode node);
 	void visit(TypeIntNode node);
 	void visit(TypeStringNode node);
+	void visit(TypeRatNode node);
 	
 	public static class Default implements ParseNodeVisitor
 	{
@@ -199,6 +201,9 @@ public interface ParseNodeVisitor {
 			defaultVisitForLeaf(node);
 		}
 		public void visit(TypeStringNode node) {
+			defaultVisitForLeaf(node);
+		}
+		public void visit(TypeRatNode node) {
 			defaultVisitForLeaf(node);
 		}
 	}

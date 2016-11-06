@@ -127,12 +127,15 @@ public class FunctionSignatures extends ArrayList<FunctionSignature> {
 			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.TYPE_BOOL, PrimitiveType.BOOLEAN),
 			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.TYPE_CHAR, PrimitiveType.CHARACTER),
 			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER),
+			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.TYPE_RAT, PrimitiveType.RATIONAL),
 			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_BOOL, PrimitiveType.BOOLEAN),
 			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_CHAR, PrimitiveType.CHARACTER),
 			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
 			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER),
+			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_RAT, PrimitiveType.RATIONAL),
 			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
 			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER),
+			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_RAT, PrimitiveType.RATIONAL),
 			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
 			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER)
 		);
@@ -147,6 +150,10 @@ public class FunctionSignatures extends ArrayList<FunctionSignature> {
 		);
 		new FunctionSignatures(Punctuator.OVER,
 			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.INTEGER, PrimitiveType.RATIONAL)
+		);
+		new FunctionSignatures(Punctuator.EXPRESS_OVER,
+			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.INTEGER, PrimitiveType.INTEGER),
+			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.INTEGER, PrimitiveType.INTEGER)
 		);
 		
 		// First, we use the operator itself (in this case the Punctuator ADD) as the key.

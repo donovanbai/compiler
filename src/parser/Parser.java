@@ -29,6 +29,7 @@ import parseTree.nodeTypes.TypeBoolNode;
 import parseTree.nodeTypes.TypeCharNode;
 import parseTree.nodeTypes.TypeFloatNode;
 import parseTree.nodeTypes.TypeIntNode;
+import parseTree.nodeTypes.TypeRatNode;
 import parseTree.nodeTypes.TypeStringNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
 import parseTree.nodeTypes.WhileStmtNode;
@@ -417,7 +418,7 @@ public class Parser {
 		}
 		
 		ParseNode left = parseNotExpression();
-		while(nowReading.isLextant(Punctuator.MULTIPLY) || nowReading.isLextant(Punctuator.DIVIDE) || nowReading.isLextant(Punctuator.OVER)) {
+		while(nowReading.isLextant(Punctuator.MULTIPLY) || nowReading.isLextant(Punctuator.DIVIDE) || nowReading.isLextant(Punctuator.OVER) || nowReading.isLextant(Punctuator.EXPRESS_OVER)) {
 			Token multiplicativeToken = nowReading;
 			readToken();
 			ParseNode right = parseNotExpression();
@@ -476,6 +477,7 @@ public class Parser {
 				case "string": return BinaryOperatorNode.withChildren(castToken, result, new TypeStringNode(typeToken));
 				case "int": return BinaryOperatorNode.withChildren(castToken, result, new TypeIntNode(typeToken));
 				case "float": return BinaryOperatorNode.withChildren(castToken, result, new TypeFloatNode(typeToken));
+				case "rat": return BinaryOperatorNode.withChildren(castToken, result, new TypeRatNode(typeToken));
 				default: return syntaxErrorNode("atomic expression");
 			}
 		}

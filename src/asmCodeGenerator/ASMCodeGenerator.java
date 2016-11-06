@@ -388,6 +388,9 @@ public class ASMCodeGenerator {
 			else if (operator == Punctuator.OVER) {
 				visitOverOperatorNode(node);
 			}
+			else if (operator == Punctuator.EXPRESS_OVER) {
+				visitExpressOverOperatorNode(node);
+			}
 			else {	// +  -  *  /  &&  ||
 				visitNormalBinaryOperatorNode(node);
 			}
@@ -620,8 +623,21 @@ public class ASMCodeGenerator {
 			code.append(arg);
 			Type type1 = node.child(0).getType();
 			Type type2 = node.child(1).getType();
-			if (type1 == PrimitiveType.INTEGER && type2 == PrimitiveType.TYPE_FLOAT) {
+			if (type1 == PrimitiveType.RATIONAL && type2 == PrimitiveType.TYPE_INT) {
+				code.add(Divide);
+			}
+			else if (type1 == PrimitiveType.RATIONAL && type2 == PrimitiveType.TYPE_FLOAT) {
 				code.add(ConvertF);
+				code.add(Exchange);
+				code.add(ConvertF);
+				code.add(Exchange);
+				code.add(FDivide);
+			}
+			else if (type1 == PrimitiveType.INTEGER && type2 == PrimitiveType.TYPE_FLOAT) {
+				code.add(ConvertF);
+			}
+			else if ((type1 == PrimitiveType.CHARACTER || type1 == PrimitiveType.INTEGER) && type2 == PrimitiveType.TYPE_RAT) {
+				code.add(PushI, 1);
 			}
 			else if (type1 == PrimitiveType.FLOATING && type2 == PrimitiveType.TYPE_INT) {
 				code.add(ConvertI);
@@ -651,6 +667,34 @@ public class ASMCodeGenerator {
 			code.add(StoreI);				// d, n					m-8: n
 			
 			simplifyRational(12, 8, 4);
+		}
+		private void visitExpressOverOperatorNode(BinaryOperatorNode node) {
+			newValueCode(node);		
+			ASMCodeFragment frag1 = removeValueCode(node.child(0));
+			ASMCodeFragment frag2 = removeValueCode(node.child(1));
+			code.append(frag1);
+			code.append(frag2);
+			if (node.child(0).getType() == PrimitiveType.RATIONAL) { // convert to a floating 
+				code.add(Memtop);
+				code.add(PushI, 4);
+				code.add(Subtract);
+				code.add(Exchange);
+				code.add(StoreI);
+				code.add(ConvertF);
+				code.add(Exchange);
+				code.add(ConvertF);
+				code.add(Exchange);
+				code.add(FDivide);
+				code.add(Memtop);
+				code.add(PushI, 4);
+				code.add(Subtract);
+				code.add(LoadI);
+			}
+			code.add(ConvertF);
+		//code.add(PStack);
+			code.add(FMultiply);
+		//code.add(PStack);
+			code.add(ConvertI);
 		}
 		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {	// +  -  *  /  &&  ||
 			newValueCode(node);

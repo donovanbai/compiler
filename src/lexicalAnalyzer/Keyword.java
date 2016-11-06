@@ -18,6 +18,7 @@ public enum Keyword implements Lextant {
 	STRING("string"),
 	INT("int"),
 	FLOAT("float"),
+	RAT("rat"),
 	IF("if"),
 	ELSE("else"),
 	WHILE("while"),
