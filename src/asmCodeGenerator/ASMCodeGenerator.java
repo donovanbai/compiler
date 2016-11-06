@@ -617,9 +617,9 @@ public class ASMCodeGenerator {
 		private void visitPipeOperatorNode(BinaryOperatorNode node) {
 			newValueCode(node);
 			ASMCodeFragment arg = removeValueCode(node.child(0));
+			code.append(arg);
 			Type type1 = node.child(0).getType();
 			Type type2 = node.child(1).getType();
-			code.append(arg);
 			if (type1 == PrimitiveType.INTEGER && type2 == PrimitiveType.TYPE_FLOAT) {
 				code.add(ConvertF);
 			}
@@ -720,7 +720,6 @@ public class ASMCodeGenerator {
 					simplifyRational(24, 20, 16);
 				}
 				else {	// if dividing, just swap n2 and d2 before multiplying
-					Labeller labeller = new Labeller("rational");					
 					ASMCodeFragment arg1 = removeValueCode(node.child(0));
 					ASMCodeFragment arg2 = removeValueCode(node.child(1));
 					code.append(arg1);		// n1, d1

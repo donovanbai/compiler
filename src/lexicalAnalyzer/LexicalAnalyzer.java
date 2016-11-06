@@ -36,7 +36,7 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 	// Token-finding main dispatch	
 
 	@Override
-	protected Token findNextToken(boolean prevIsLitOrId) {
+	protected Token findNextToken(boolean prevIsLitOrBracket) {
 		LocatedChar ch = nextNonWhitespaceChar();
 		
 		if (ch.isDigit()) {
@@ -46,7 +46,7 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 			return scanIdentifier(ch);
 		}
 		else if (isPunctuatorStart(ch)) {	
-			if ((ch.getCharacter() == '+' || ch.getCharacter() == '-') &&  !prevIsLitOrId || ch.getCharacter() == '.' && input.peek().isDigit()) {
+			if ((ch.getCharacter() == '+' || ch.getCharacter() == '-') &&  !prevIsLitOrBracket || ch.getCharacter() == '.' && input.peek().isDigit()) {
 				return scanNumber(ch);
 			}
 			else {
@@ -62,14 +62,14 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 			if (asciiVal < 32 || asciiVal > 126) { // if character following ^ is invalid, assume ^ is an extra character and move on
 				input.pushback(ch2);
 				lexicalError(ch);
-				return findNextToken(prevIsLitOrId);
+				return findNextToken(prevIsLitOrBracket);
 			}
 			LocatedChar ch3 = input.next();
 			if (ch3.getCharacter() != '^') { // if character following ^c is not ^, assume ^ is an extra character and move on
 				input.pushback(ch3);
 				input.pushback(ch2);
 				lexicalError(ch);
-				return findNextToken(prevIsLitOrId);
+				return findNextToken(prevIsLitOrBracket);
 			}
 			StringBuffer buffer = new StringBuffer();
 			char[] chars = {ch.getCharacter(), ch2.getCharacter(), ch3.getCharacter()};
@@ -80,7 +80,7 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 			StringBuffer buffer = new StringBuffer();
 			buffer.append(ch.getCharacter());
 			if (!appendRestOfString(buffer)) { // if newline was found in string, ignore everything from " to \n and move on
-				return findNextToken(prevIsLitOrId);
+				return findNextToken(prevIsLitOrBracket);
 			}
 			return StringToken.make(ch.getLocation(), buffer.toString());
 		}
@@ -89,7 +89,7 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 		}
 		else {
 			lexicalError(ch);
-			return findNextToken(prevIsLitOrId);
+			return findNextToken(prevIsLitOrBracket);
 		}
 	}
 

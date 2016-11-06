@@ -8,7 +8,7 @@ public abstract class ScannerImp implements Scanner {
 	private Token nextToken;
 	protected final PushbackCharStream input;
 	
-	protected abstract Token findNextToken(boolean prevIsLitOrId); // previous token is literal or identifier
+	protected abstract Token findNextToken(boolean prevIsLitOrBracket); // previous token is literal or bracket
 
 	public ScannerImp(PushbackCharStream input) {
 		super();
@@ -25,7 +25,7 @@ public abstract class ScannerImp implements Scanner {
 	@Override
 	public Token next() {
 		Token result = nextToken;
-		if (Parser.startsLiteral(result)) {
+		if (Parser.startsLiteral(result) || result.isLextant(Punctuator.RRB, Punctuator.RSB)) {
 			nextToken = findNextToken(true);
 		}
 		else nextToken = findNextToken(false);

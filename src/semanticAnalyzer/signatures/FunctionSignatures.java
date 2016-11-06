@@ -132,7 +132,9 @@ public class FunctionSignatures extends ArrayList<FunctionSignature> {
 			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
 			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER),
 			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
-			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER)
+			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER),
+			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
+			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER)
 		);
 		new FunctionSignatures(Punctuator.AND,
 			    new FunctionSignature(ASMOpcode.And, PrimitiveType.BOOLEAN, PrimitiveType.BOOLEAN, PrimitiveType.BOOLEAN)
