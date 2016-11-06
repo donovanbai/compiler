@@ -148,12 +148,138 @@
         DataZ        0                         
         Label        $$main                    
         PushF        1.500000                  
-        PushI        9                         
-        ConvertF                               
+        PushF        223092870.000000          
         FMultiply                              
         ConvertI                               
+        Duplicate                              
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        PushI        223092870                 
+        Duplicate                              
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Label        -gcd-1-start              
+        Duplicate                              
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Duplicate                              
+        JumpFalse    -gcd-1-false              
+        Exchange                               
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        LoadI                                  
+        Remainder                              
+        Jump         -gcd-1-start              
+        Label        -gcd-1-false              
+        Pop                                    
+        Duplicate                              
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Exchange                               
+        Divide                                 
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        12                        
+        Subtract                               
+        LoadI                                  
+        Divide                                 
+        Duplicate                              
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Exchange                               
+        Duplicate                              
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Exchange                               
+        Divide                                 
+        Duplicate                              
+        JumpFalse    -compare-2-false2         
         PushD        $print-format-integer     
         Printf                                 
+        Jump         -compare-2-join           
+        Label        -compare-2-false2         
+        Pop                                    
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        LoadI                                  
+        Multiply                               
+        JumpNeg      -compare-2-neg            
+        Jump         -compare-2-join           
+        Label        -compare-2-neg            
+        PushI        45                        
+        PushD        $print-format-character   
+        Printf                                 
+        Label        -compare-2-join           
+        Memtop                                 
+        PushI        8                         
+        Subtract                               
+        LoadI                                  
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Remainder                              
+        Duplicate                              
+        JumpFalse    -compare-2-false3         
+        PushI        95                        
+        PushD        $print-format-character   
+        Printf                                 
+        Duplicate                              
+        JumpNeg      -compare-2-true           
+        Jump         -compare-2-join2          
+        Label        -compare-2-true           
+        Negate                                 
+        Label        -compare-2-join2          
+        PushD        $print-format-integer     
+        Printf                                 
+        PushI        47                        
+        PushD        $print-format-character   
+        Printf                                 
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Duplicate                              
+        JumpPos      -compare-2-pos2           
+        Negate                                 
+        Label        -compare-2-pos2           
+        PushD        $print-format-integer     
+        Printf                                 
+        Jump         -compare-2-join3          
+        Label        -compare-2-false3         
+        Pop                                    
+        Label        -compare-2-join3          
         PushD        $print-format-newline     
         Printf                                 
         Halt                                   

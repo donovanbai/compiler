@@ -136,6 +136,7 @@ public class FunctionSignatures extends ArrayList<FunctionSignature> {
 			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
 			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER),
 			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_RAT, PrimitiveType.RATIONAL),
+			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.TYPE_RAT, PrimitiveType.RATIONAL),
 			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
 			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER)
 		);
@@ -154,6 +155,10 @@ public class FunctionSignatures extends ArrayList<FunctionSignature> {
 		new FunctionSignatures(Punctuator.EXPRESS_OVER,
 			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.INTEGER, PrimitiveType.INTEGER),
 			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.INTEGER, PrimitiveType.INTEGER)
+		);
+		new FunctionSignatures(Punctuator.RATIONALIZE,
+			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.INTEGER, PrimitiveType.RATIONAL),
+			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.INTEGER, PrimitiveType.RATIONAL)
 		);
 		
 		// First, we use the operator itself (in this case the Punctuator ADD) as the key.

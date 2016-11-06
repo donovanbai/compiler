@@ -103,6 +103,7 @@ public class FunctionSignature {
 		case NOT:			return FunctionSignatures.signaturesOf(Punctuator.NOT).acceptingSignature(operandTypes);
 		case OVER:			return FunctionSignatures.signaturesOf(Punctuator.OVER).acceptingSignature(operandTypes);
 		case EXPRESS_OVER:	return FunctionSignatures.signaturesOf(Punctuator.EXPRESS_OVER).acceptingSignature(operandTypes);
+		case RATIONALIZE:	return FunctionSignatures.signaturesOf(Punctuator.RATIONALIZE).acceptingSignature(operandTypes);
 		default:
 			return neverMatchedSignature;
 		}

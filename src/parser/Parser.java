@@ -418,7 +418,7 @@ public class Parser {
 		}
 		
 		ParseNode left = parseNotExpression();
-		while(nowReading.isLextant(Punctuator.MULTIPLY) || nowReading.isLextant(Punctuator.DIVIDE) || nowReading.isLextant(Punctuator.OVER) || nowReading.isLextant(Punctuator.EXPRESS_OVER)) {
+		while(nowReading.isLextant(Punctuator.MULTIPLY) || nowReading.isLextant(Punctuator.DIVIDE) || nowReading.isLextant(Punctuator.OVER) || nowReading.isLextant(Punctuator.EXPRESS_OVER) || nowReading.isLextant(Punctuator.RATIONALIZE)) {
 			Token multiplicativeToken = nowReading;
 			readToken();
 			ParseNode right = parseNotExpression();
