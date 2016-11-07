@@ -166,18 +166,174 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		assert node.nChildren() == 2;
 		ParseNode left  = node.child(0);
 		ParseNode right = node.child(1);
-		List<Type> childTypes = Arrays.asList(left.getType(), right.getType());
+		Type leftType = left.getType();
+		Type rightType = right.getType();
+		List<Type> childTypes = Arrays.asList(leftType, rightType);
 		
 		Lextant operator = node.getOperator();
 		FunctionSignature signature = FunctionSignature.signatureOf(operator, childTypes);
 		
 		if(signature.accepts(childTypes)) {
 				node.setType(signature.resultType());
+				return;
 		}
-		else {
-			typeCheckError(node, childTypes);
-			node.setType(PrimitiveType.ERROR);
+		
+		// promote left operand
+		int matches = 0;
+		if (leftType == PrimitiveType.CHARACTER) {
+			List<Type> childTypes2 = Arrays.asList(PrimitiveType.INTEGER, rightType);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				left.setPromotedType(PrimitiveType.INTEGER);
+				node.setType(signature.resultType());
+				return;
+			}
+			childTypes2 = Arrays.asList(PrimitiveType.FLOATING, rightType);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				matches++;
+			}
+			childTypes2 = Arrays.asList(PrimitiveType.RATIONAL, rightType);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				if (matches == 1) {
+					promotionError(node, childTypes);
+					node.setType(PrimitiveType.ERROR);
+					return;
+				}
+				left.setPromotedType(PrimitiveType.RATIONAL);
+				node.setType(signature.resultType());
+				return;
+			}
+			if (matches == 1) {
+				childTypes2 = Arrays.asList(PrimitiveType.FLOATING, rightType);
+				signature = FunctionSignature.signatureOf(operator, childTypes2);
+				left.setPromotedType(PrimitiveType.FLOATING);
+				node.setType(signature.resultType());
+				return;
+			}
 		}
+		else if (leftType == PrimitiveType.INTEGER) {
+			List<Type> childTypes2 = Arrays.asList(PrimitiveType.FLOATING, rightType);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				matches++;
+			}
+			childTypes2 = Arrays.asList(PrimitiveType.RATIONAL, rightType);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				if (matches == 1) {
+					promotionError(node, childTypes);
+					node.setType(PrimitiveType.ERROR);
+					return;
+				}
+				left.setPromotedType(PrimitiveType.RATIONAL);
+				node.setType(signature.resultType());
+				return;
+			}
+			if (matches == 1) {
+				childTypes2 = Arrays.asList(PrimitiveType.FLOATING, rightType);
+				signature = FunctionSignature.signatureOf(operator, childTypes2);
+				left.setPromotedType(PrimitiveType.FLOATING);
+				node.setType(signature.resultType());
+				return;
+			}
+		}
+		
+		// promote second operand
+		if (rightType == PrimitiveType.CHARACTER) {
+			List<Type> childTypes2 = Arrays.asList(leftType, PrimitiveType.INTEGER);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				right.setPromotedType(PrimitiveType.INTEGER);
+				node.setType(signature.resultType());
+				return;
+			}
+			childTypes2 = Arrays.asList(leftType, PrimitiveType.FLOATING);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				matches++;
+			}
+			childTypes2 = Arrays.asList(leftType, PrimitiveType.RATIONAL);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				if (matches == 1) {
+					promotionError(node, childTypes);
+					node.setType(PrimitiveType.ERROR);
+					return;
+				}
+				right.setPromotedType(PrimitiveType.RATIONAL);
+				node.setType(signature.resultType());
+				return;
+			}
+			if (matches == 1) {
+				childTypes2 = Arrays.asList(leftType, PrimitiveType.FLOATING);
+				signature = FunctionSignature.signatureOf(operator, childTypes2);
+				right.setPromotedType(PrimitiveType.FLOATING);
+				node.setType(signature.resultType());
+				return;
+			}
+		}
+		else if (rightType == PrimitiveType.INTEGER) {
+			List<Type> childTypes2 = Arrays.asList(leftType, PrimitiveType.FLOATING);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				matches++;
+			}
+			childTypes2 = Arrays.asList(leftType, PrimitiveType.RATIONAL);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				if (matches == 1) {
+					promotionError(node, childTypes);
+					node.setType(PrimitiveType.ERROR);
+					return;
+				}
+				right.setPromotedType(PrimitiveType.RATIONAL);
+				node.setType(signature.resultType());
+				return;
+			}
+			if (matches == 1) {
+				childTypes2 = Arrays.asList(leftType, PrimitiveType.FLOATING);
+				signature = FunctionSignature.signatureOf(operator, childTypes2);
+				right.setPromotedType(PrimitiveType.FLOATING);
+				node.setType(signature.resultType());
+				return;
+			}
+		}
+		
+		// promote both operands 	
+		/*
+		if (leftType == PrimitiveType.CHARACTER && rightType == PrimitiveType.CHARACTER) {
+			List<Type> childTypes2 = Arrays.asList(PrimitiveType.INTEGER, PrimitiveType.INTEGER);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				left.setPromotedType(PrimitiveType.INTEGER);
+				right.setPromotedType(PrimitiveType.INTEGER);
+				node.setType(signature.resultType());
+				return;
+			}
+			childTypes2 = Arrays.asList(PrimitiveType.INTEGER, PrimitiveType.INTEGER);
+			signature = FunctionSignature.signatureOf(operator, childTypes2);
+			if (signature.accepts(childTypes2)) {
+				left.setPromotedType(PrimitiveType.INTEGER);
+				right.setPromotedType(PrimitiveType.INTEGER);
+				node.setType(signature.resultType());
+				return;
+			}
+		}
+		else if (leftType == PrimitiveType.CHARACTER && rightType == PrimitiveType.INTEGER) {
+			
+		}
+		else if (leftType == PrimitiveType.INTEGER && rightType == PrimitiveType.CHARACTER) {
+			
+		}
+		else if (leftType == PrimitiveType.INTEGER && rightType == PrimitiveType.INTEGER) {
+	
+		}
+		*/
+		
+		typeCheckError(node, childTypes);
+		node.setType(PrimitiveType.ERROR);
 	}
 	
 	@Override
@@ -280,10 +436,14 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	
 	///////////////////////////////////////////////////////////////////////////
 	// error logging/printing
-
-	private void typeCheckError(ParseNode node, List<Type> operandTypes) {
+	
+	private void promotionError(ParseNode node, List<Type> operandTypes) {
 		Token token = node.getToken();
-		
+		logError("operator " + token.getLexeme() + " has more than one matching promotion for types " 
+				 + operandTypes  + " at " + token.getLocation());
+	}
+	private void typeCheckError(ParseNode node, List<Type> operandTypes) {
+		Token token = node.getToken();	
 		logError("operator " + token.getLexeme() + " not defined for types " 
 				 + operandTypes  + " at " + token.getLocation());	
 	}

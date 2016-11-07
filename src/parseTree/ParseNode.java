@@ -18,19 +18,22 @@ public class ParseNode {
 
 	protected Token token;
 	Type type;					// used for expressions
+	Type promotedType;
 	private Scope scope;		// the scope created by this node, if any.
 
 	public ParseNode(Token token) {
 		this.token = token;
-		this.type = PrimitiveType.NO_TYPE;
-		this.scope = null;
-		this.parent = NO_PARENT;
+		type = PrimitiveType.NO_TYPE;
+		promotedType = type;
+		scope = null;
+		parent = NO_PARENT;
 		initChildren();
 	}
 	// "detached" copy constructor.  Copies all info except tree info (parent and children)
 	public ParseNode(ParseNode node) {
 		this.token = node.token;
 		this.type = node.type;
+		this.promotedType = node.promotedType;
 		this.scope = node.scope;
 	}
 
@@ -48,7 +51,12 @@ public class ParseNode {
 	public Type getType() {
 		return type;
 	}
-
+	public void setPromotedType(Type type) {
+		promotedType = type;
+	}
+	public Type getPromotedType() {
+		return promotedType;
+	}
 	
 ////////////////////////////////////////////////////////////////////////////////////
 // scopes and bindings 
