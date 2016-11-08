@@ -1,4 +1,4 @@
 exec {
-	var a := ^a^ + 5.
-	print a, _n_.
+	var a := [^a^|float].
+	print a + 0.5, _n_.
 }

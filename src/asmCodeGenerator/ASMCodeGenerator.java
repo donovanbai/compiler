@@ -404,25 +404,38 @@ public class ASMCodeGenerator {
 			ASMCodeFragment arg2 = removeValueCode(node.child(1));
 			
 			Labeller labeller = new Labeller("compare");
-			
-			String startLabel = labeller.newLabel("arg1");
-			String arg2Label  = labeller.newLabel("arg2");
-			String subLabel   = labeller.newLabel("sub");
+
 			String trueLabel  = labeller.newLabel("true");
 			String falseLabel = labeller.newLabel("false");
 			String joinLabel  = labeller.newLabel("join");
 			
 			newValueCode(node);
-			code.add(Label, startLabel);
 			code.append(arg1);
-			code.add(Label, arg2Label);
 			code.append(arg2);
-			code.add(Label, subLabel);
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(FSubtract);
+			// check 1st operand for promotion to float
+			if (node.child(0).getType() != PrimitiveType.FLOATING && node.child(0).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				code.add(Exchange);
+				code.add(opcodeForStore(node.child(1).getType()));	// store 2nd operand
+				code.add(ConvertF); 	// convert 1st operand to floating
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				turnAddressIntoValue(code, node.child(1));	// load 2nd operand back
+			}
+			
+			// check 2nd operand for promotion to float
+			if (node.child(1).getType() != PrimitiveType.FLOATING && node.child(1).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(ConvertF); 	// convert 2nd operand to floating
+			}
+			
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(FSubtract);
 			else code.add(Subtract);
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(JumpFPos, trueLabel);
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(JumpFPos, trueLabel);
 			else code.add(JumpPos, trueLabel);
 			
 			code.add(Jump, falseLabel);
@@ -442,24 +455,37 @@ public class ASMCodeGenerator {
 			
 			Labeller labeller = new Labeller("compare");
 			
-			String startLabel = labeller.newLabel("arg1");
-			String arg2Label  = labeller.newLabel("arg2");
-			String subLabel   = labeller.newLabel("sub");
 			String trueLabel  = labeller.newLabel("true");
 			String falseLabel = labeller.newLabel("false");
 			String joinLabel  = labeller.newLabel("join");
 			
 			newValueCode(node);
-			code.add(Label, startLabel);
 			code.append(arg1);
-			code.add(Label, arg2Label);
 			code.append(arg2);
-			code.add(Label, subLabel);
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(FSubtract);
+			// check 1st operand for promotion to float
+			if (node.child(0).getType() != PrimitiveType.FLOATING && node.child(0).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				code.add(Exchange);
+				code.add(opcodeForStore(node.child(1).getType()));	// store 2nd operand
+				code.add(ConvertF); 	// convert 1st operand to floating
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				turnAddressIntoValue(code, node.child(1));	// load 2nd operand back
+			}
+			
+			// check 2nd operand for promotion to float
+			if (node.child(1).getType() != PrimitiveType.FLOATING && node.child(1).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(ConvertF); 	// convert 2nd operand to floating
+			}
+			
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(FSubtract);
 			else code.add(Subtract);
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(JumpFNeg, trueLabel);
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(JumpFNeg, trueLabel);
 			else code.add(JumpNeg, trueLabel);
 			
 			code.add(Jump, falseLabel);
@@ -479,24 +505,37 @@ public class ASMCodeGenerator {
 			
 			Labeller labeller = new Labeller("compare");
 			
-			String startLabel = labeller.newLabel("arg1");
-			String arg2Label  = labeller.newLabel("arg2");
-			String subLabel   = labeller.newLabel("sub");
 			String trueLabel  = labeller.newLabel("true");
 			String falseLabel = labeller.newLabel("false");
 			String joinLabel  = labeller.newLabel("join");
 			
 			newValueCode(node);
-			code.add(Label, startLabel);
 			code.append(arg1);
-			code.add(Label, arg2Label);
 			code.append(arg2);
-			code.add(Label, subLabel);
+
+			// check 1st operand for promotion to float
+			if (node.child(0).getType() != PrimitiveType.FLOATING && node.child(0).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				code.add(Exchange);
+				code.add(opcodeForStore(node.child(1).getType()));	// store 2nd operand
+				code.add(ConvertF); 	// convert 1st operand to floating
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				turnAddressIntoValue(code, node.child(1));	// load 2nd operand back
+			}
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(FSubtract);
+			// check 2nd operand for promotion to float
+			if (node.child(1).getType() != PrimitiveType.FLOATING && node.child(1).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(ConvertF); 	// convert 2nd operand to floating
+			}
+			
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(FSubtract);
 			else code.add(Subtract);
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(JumpFNeg, falseLabel);
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(JumpFNeg, falseLabel);
 			else code.add(JumpNeg, falseLabel);
 			
 			code.add(Jump, trueLabel);
@@ -516,24 +555,37 @@ public class ASMCodeGenerator {
 			
 			Labeller labeller = new Labeller("compare");
 			
-			String startLabel = labeller.newLabel("arg1");
-			String arg2Label  = labeller.newLabel("arg2");
-			String subLabel   = labeller.newLabel("sub");
 			String trueLabel  = labeller.newLabel("true");
 			String falseLabel = labeller.newLabel("false");
 			String joinLabel  = labeller.newLabel("join");
 			
 			newValueCode(node);
-			code.add(Label, startLabel);
 			code.append(arg1);
-			code.add(Label, arg2Label);
 			code.append(arg2);
-			code.add(Label, subLabel);
+
+			// check 1st operand for promotion to float
+			if (node.child(0).getType() != PrimitiveType.FLOATING && node.child(0).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				code.add(Exchange);
+				code.add(opcodeForStore(node.child(1).getType()));	// store 2nd operand
+				code.add(ConvertF); 	// convert 1st operand to floating
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				turnAddressIntoValue(code, node.child(1));	// load 2nd operand back
+			}
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(FSubtract);
+			// check 2nd operand for promotion to float
+			if (node.child(1).getType() != PrimitiveType.FLOATING && node.child(1).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(ConvertF); 	// convert 2nd operand to floating
+			}
+			
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(FSubtract);
 			else code.add(Subtract);
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(JumpFPos, falseLabel);
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(JumpFPos, falseLabel);
 			else code.add(JumpPos, falseLabel);
 			
 			code.add(Jump, trueLabel);
@@ -553,24 +605,37 @@ public class ASMCodeGenerator {
 			
 			Labeller labeller = new Labeller("compare");
 			
-			String startLabel = labeller.newLabel("arg1");
-			String arg2Label  = labeller.newLabel("arg2");
-			String subLabel   = labeller.newLabel("sub");
 			String trueLabel  = labeller.newLabel("true");
 			String falseLabel = labeller.newLabel("false");
 			String joinLabel  = labeller.newLabel("join");
 			
 			newValueCode(node);
-			code.add(Label, startLabel);
 			code.append(arg1);
-			code.add(Label, arg2Label);
 			code.append(arg2);
-			code.add(Label, subLabel);
+
+			// check 1st operand for promotion to float
+			if (node.child(0).getType() != PrimitiveType.FLOATING && node.child(0).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				code.add(Exchange);
+				code.add(opcodeForStore(node.child(1).getType()));	// store 2nd operand
+				code.add(ConvertF); 	// convert 1st operand to floating
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				turnAddressIntoValue(code, node.child(1));	// load 2nd operand back
+			}
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(FSubtract);
+			// check 2nd operand for promotion to float
+			if (node.child(1).getType() != PrimitiveType.FLOATING && node.child(1).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(ConvertF); 	// convert 2nd operand to floating
+			}
+			
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(FSubtract);
 			else code.add(Subtract);
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(JumpFZero, trueLabel);
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(JumpFZero, trueLabel);
 			else code.add(JumpFalse, trueLabel);
 			
 			code.add(Jump, falseLabel);
@@ -590,24 +655,37 @@ public class ASMCodeGenerator {
 			
 			Labeller labeller = new Labeller("compare");
 			
-			String arg1Label = labeller.newLabel("arg1");
-			String arg2Label  = labeller.newLabel("arg2");
-			String subLabel   = labeller.newLabel("sub");
 			String trueLabel  = labeller.newLabel("true");
 			String falseLabel = labeller.newLabel("false");
 			String joinLabel  = labeller.newLabel("join");
 			
 			newValueCode(node);
-			code.add(Label, arg1Label);
 			code.append(arg1);
-			code.add(Label, arg2Label);
 			code.append(arg2);
-			code.add(Label, subLabel);
+
+			// check 1st operand for promotion to float
+			if (node.child(0).getType() != PrimitiveType.FLOATING && node.child(0).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				code.add(Exchange);
+				code.add(opcodeForStore(node.child(1).getType()));	// store 2nd operand
+				code.add(ConvertF); 	// convert 1st operand to floating
+				code.add(Memtop);
+				code.add(PushI, node.child(1).getType().getSize());
+				code.add(Subtract);
+				turnAddressIntoValue(code, node.child(1));	// load 2nd operand back
+			}
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(FSubtract);
+			// check 2nd operand for promotion to float
+			if (node.child(1).getType() != PrimitiveType.FLOATING && node.child(1).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(ConvertF); 	// convert 2nd operand to floating
+			}
+			
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(FSubtract);
 			else code.add(Subtract);
 			
-			if (node.child(0).getType() == PrimitiveType.FLOATING) code.add(JumpFZero, falseLabel);
+			if (node.child(0).getPromotedType() == PrimitiveType.FLOATING) code.add(JumpFZero, falseLabel);
 			else code.add(JumpFalse, falseLabel);
 			
 			code.add(Jump, trueLabel);
@@ -624,7 +702,16 @@ public class ASMCodeGenerator {
 			newValueCode(node);
 			ASMCodeFragment arg = removeValueCode(node.child(0));
 			code.append(arg);
-			Type type1 = node.child(0).getType();
+			
+			// check operand for promotion to float or rat
+			if (node.child(0).getType() != PrimitiveType.FLOATING && node.child(0).getPromotedType() == PrimitiveType.FLOATING) {
+				code.add(ConvertF);
+			}
+			else if (node.child(0).getType() != PrimitiveType.RATIONAL && node.child(0).getPromotedType() == PrimitiveType.RATIONAL) {
+				code.add(PushI, 1);
+			}
+			
+			Type type1 = node.child(0).getPromotedType();
 			Type type2 = node.child(1).getType();
 			if (type1 == PrimitiveType.RATIONAL && type2 == PrimitiveType.TYPE_INT) {
 				code.add(Divide);
@@ -869,11 +956,46 @@ public class ASMCodeGenerator {
 			}
 			else {
 				ASMCodeFragment arg1 = removeValueCode(node.child(0));
-				ASMCodeFragment arg2 = removeValueCode(node.child(1));			
+				ASMCodeFragment arg2 = removeValueCode(node.child(1));
 				code.append(arg1);
 				code.append(arg2);
-				Type type1 = node.child(0).getType();
-				Type type2 = node.child(1).getType();
+				
+				// check 1st operand for promotion to float or rat
+				if (node.child(0).getType() != PrimitiveType.FLOATING && node.child(0).getPromotedType() == PrimitiveType.FLOATING) {
+					code.add(Memtop);
+					code.add(PushI, node.child(1).getType().getSize());
+					code.add(Subtract);
+					code.add(Exchange);
+					code.add(opcodeForStore(node.child(1).getType()));	// store 2nd operand
+					code.add(ConvertF); 	// convert 1st operand to floating
+					code.add(Memtop);
+					code.add(PushI, node.child(1).getType().getSize());
+					code.add(Subtract);
+					turnAddressIntoValue(code, node.child(1));	// load 2nd operand back
+				}
+				else if (node.child(0).getType() != PrimitiveType.RATIONAL && node.child(0).getPromotedType() == PrimitiveType.RATIONAL) {
+					code.add(Memtop);
+					code.add(PushI, node.child(1).getType().getSize());
+					code.add(Subtract);
+					code.add(Exchange);
+					code.add(opcodeForStore(node.child(1).getType()));	// store 2nd operand
+					code.add(PushI, 1); 	// add denominator to 1st operand
+					code.add(Memtop);
+					code.add(PushI, node.child(1).getType().getSize());
+					code.add(Subtract);
+					turnAddressIntoValue(code, node.child(1));	// load 2nd operand back
+				}
+				
+				// check 2nd operand for promotion to float or rat
+				if (node.child(1).getType() != PrimitiveType.FLOATING && node.child(1).getPromotedType() == PrimitiveType.FLOATING) {
+					code.add(ConvertF); 	// convert 2nd operand to floating
+				}
+				else if (node.child(1).getType() != PrimitiveType.RATIONAL && node.child(1).getPromotedType() == PrimitiveType.RATIONAL) {
+					code.add(PushI, 1); 	// add denominator to 2nd operand
+				}
+				
+				Type type1 = node.child(0).getPromotedType();
+				Type type2 = node.child(1).getPromotedType();
 				if (operator == Punctuator.DIVIDE && type1 == PrimitiveType.INTEGER) {
 					code.add(Duplicate);
 					code.add(JumpFalse, RunTime.INTEGER_DIVIDE_BY_ZERO_RUNTIME_ERROR);

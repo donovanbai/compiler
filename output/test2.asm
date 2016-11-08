@@ -151,17 +151,15 @@
         PushI        0                         
         Add                                    %% a
         PushI        97                        
-        StoreI                                 
-        PushD        $global-memory-block      
-        PushI        4                         
-        Add                                    %% b
-        PushI        2                         
-        StoreI                                 
+        ConvertF                               
+        StoreF                                 
         PushD        $global-memory-block      
         PushI        0                         
         Add                                    %% a
-        LoadI                                  
-        PushD        $print-format-integer     
+        LoadF                                  
+        PushF        0.500000                  
+        FAdd                                   
+        PushD        $print-format-floating    
         Printf                                 
         PushD        $print-format-newline     
         Printf                                 
