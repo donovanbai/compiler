@@ -1,4 +1,6 @@
 exec {
-	var a := [^a^|float].
-	print a + 0.5, _n_.
+	#var a := [^s^, ^a^, ^i^, ^d^].
+	#print a[0], _n_.
+	var a := 1//2 + ^a^.
+	print a, _n_.
 }

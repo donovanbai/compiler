@@ -18,6 +18,7 @@ import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
 import parseTree.nodeTypes.MainBlockNode;
 import parseTree.nodeTypes.DeclarationNode;
+import parseTree.nodeTypes.ExprListNode;
 import parseTree.nodeTypes.FloatConstantNode;
 import parseTree.nodeTypes.IdentifierNode;
 import parseTree.nodeTypes.IfStmtNode;
@@ -30,8 +31,10 @@ import parseTree.nodeTypes.StringConstantNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
 import parseTree.nodeTypes.WhileStmtNode;
 import semanticAnalyzer.signatures.FunctionSignature;
+import semanticAnalyzer.types.CompoundType;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
+import semanticAnalyzer.types.TypeLiteral;
 import symbolTable.Binding;
 import symbolTable.MemoryLocation;
 import symbolTable.Scope;
@@ -162,9 +165,9 @@ public class ASMCodeGenerator {
 			else if (node.getType() == PrimitiveType.STRING) {
 				//code.add(LoadC);
 			}
-			/*else if (node.getType() == PrimitiveType.RATIONAL) {
+			else if (node.getType() instanceof CompoundType) {
 				code.add(LoadI);
-			}*/
+			}
 			else {
 				assert false : "node " + node;
 			}
@@ -353,6 +356,9 @@ public class ASMCodeGenerator {
 			}
 			if (type == PrimitiveType.STRING) {
 				return Nop;
+			}
+			if (type instanceof CompoundType) {
+				return StoreI;
 			}
 			assert false: "Type " + type + " unimplemented in opcodeForStore()";
 			return null;
@@ -713,26 +719,26 @@ public class ASMCodeGenerator {
 			
 			Type type1 = node.child(0).getPromotedType();
 			Type type2 = node.child(1).getType();
-			if (type1 == PrimitiveType.RATIONAL && type2 == PrimitiveType.TYPE_INT) {
+			if (type1 == PrimitiveType.RATIONAL && type2 == TypeLiteral.TYPE_INT) {
 				code.add(Divide);
 			}
-			else if (type1 == PrimitiveType.RATIONAL && type2 == PrimitiveType.TYPE_FLOAT) {
+			else if (type1 == PrimitiveType.RATIONAL && type2 == TypeLiteral.TYPE_FLOAT) {
 				code.add(ConvertF);
 				code.add(Exchange);
 				code.add(ConvertF);
 				code.add(Exchange);
 				code.add(FDivide);
 			}
-			else if (type1 == PrimitiveType.INTEGER && type2 == PrimitiveType.TYPE_FLOAT) {
+			else if (type1 == PrimitiveType.INTEGER && type2 == TypeLiteral.TYPE_FLOAT) {
 				code.add(ConvertF);
 			}
-			else if ((type1 == PrimitiveType.CHARACTER || type1 == PrimitiveType.INTEGER) && type2 == PrimitiveType.TYPE_RAT) {
+			else if ((type1 == PrimitiveType.CHARACTER || type1 == PrimitiveType.INTEGER) && type2 == TypeLiteral.TYPE_RAT) {
 				code.add(PushI, 1);
 			}
-			else if (type1 == PrimitiveType.FLOATING && type2 == PrimitiveType.TYPE_INT) {
+			else if (type1 == PrimitiveType.FLOATING && type2 == TypeLiteral.TYPE_INT) {
 				code.add(ConvertI);
 			}
-			else if (type1 == PrimitiveType.FLOATING && type2 == PrimitiveType.TYPE_RAT) {
+			else if (type1 == PrimitiveType.FLOATING && type2 == TypeLiteral.TYPE_RAT) {
 				code.add(PushF, 223092870.0);
 				code.add(FMultiply);
 				code.add(ConvertI);
@@ -846,14 +852,53 @@ public class ASMCodeGenerator {
 		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {	// +  -  *  /  &&  ||
 			newValueCode(node);
 			Lextant operator = node.getOperator();
-			if (node.child(0).getType() == PrimitiveType.RATIONAL) {			
+			ASMCodeFragment arg1 = removeValueCode(node.child(0));
+			ASMCodeFragment arg2 = removeValueCode(node.child(1));
+			code.append(arg1);		// a, b
+			code.append(arg2); 		// a, b, c, d
+			if (node.child(0).getPromotedType() == PrimitiveType.RATIONAL) {		
+				// check 1st operand for promotion
+				if (node.child(0).getType() != PrimitiveType.RATIONAL) {
+					code.add(Memtop);
+					if (node.child(1).getType() != PrimitiveType.RATIONAL) {
+						code.add(PushI, node.child(1).getType().getSize());
+						code.add(Subtract);
+						code.add(Exchange);
+						code.add(opcodeForStore(node.child(1).getType()));	// store 2nd operand
+						code.add(PushI, 1); 	// add denominator to 1st operand
+						code.add(Memtop);
+						code.add(PushI, node.child(1).getType().getSize());
+						code.add(Subtract);
+						turnAddressIntoValue(code, node.child(1));	// load 2nd operand back
+					}
+					else {
+						code.add(PushI, 4);
+						code.add(Subtract);
+						code.add(Exchange);
+						code.add(StoreI); 		// store denominator
+						code.add(Memtop);
+						code.add(PushI, 8);
+						code.add(Subtract);
+						code.add(Exchange);
+						code.add(StoreI); 		// store numerator
+						code.add(PushI, 1); 	// add denominator to 1st operand
+						code.add(Memtop);
+						code.add(PushI, 8);
+						code.add(Subtract);
+						code.add(LoadI); 		// load numerator back
+						code.add(Memtop);
+						code.add(PushI, 4);
+						code.add(Subtract);
+						code.add(LoadI); 		// load denominator back
+					}		
+				}
+				// check 2nd operand for promotion
+				if (node.child(1).getType() != PrimitiveType.RATIONAL) {
+					code.add(PushI, 1); 	// add denominator to 2nd operand
+				}
+				
 				if (operator == Punctuator.ADD || operator == Punctuator.SUBTRACT) {
-					// a/b + c/d = (ad+cb)/bd
-					
-					ASMCodeFragment arg1 = removeValueCode(node.child(0));
-					ASMCodeFragment arg2 = removeValueCode(node.child(1));
-					code.append(arg1);		// a, b
-					code.append(arg2); 		// a, b, c, d
+					// a/b + c/d = (ad+cb)/bd			
 					code.add(Memtop);
 					code.add(PushI, 4);
 					code.add(Subtract);		// a, b, c, d, m-4
@@ -911,10 +956,6 @@ public class ASMCodeGenerator {
 					simplifyRational(24, 20, 16);
 				}
 				else {	// if dividing, just swap n2 and d2 before multiplying
-					ASMCodeFragment arg1 = removeValueCode(node.child(0));
-					ASMCodeFragment arg2 = removeValueCode(node.child(1));
-					code.append(arg1);		// n1, d1
-					code.append(arg2); 		// n1, d1, n2, d2
 					if (operator == Punctuator.DIVIDE) code.add(Exchange);
 					code.add(Memtop);
 					code.add(PushI, 4);
@@ -954,13 +995,8 @@ public class ASMCodeGenerator {
 					simplifyRational(20, 16, 12);
 				}
 			}
-			else {
-				ASMCodeFragment arg1 = removeValueCode(node.child(0));
-				ASMCodeFragment arg2 = removeValueCode(node.child(1));
-				code.append(arg1);
-				code.append(arg2);
-				
-				// check 1st operand for promotion to float or rat
+			else {		
+				// check 1st operand for promotion to float
 				if (node.child(0).getType() != PrimitiveType.FLOATING && node.child(0).getPromotedType() == PrimitiveType.FLOATING) {
 					code.add(Memtop);
 					code.add(PushI, node.child(1).getType().getSize());
@@ -973,25 +1009,10 @@ public class ASMCodeGenerator {
 					code.add(Subtract);
 					turnAddressIntoValue(code, node.child(1));	// load 2nd operand back
 				}
-				else if (node.child(0).getType() != PrimitiveType.RATIONAL && node.child(0).getPromotedType() == PrimitiveType.RATIONAL) {
-					code.add(Memtop);
-					code.add(PushI, node.child(1).getType().getSize());
-					code.add(Subtract);
-					code.add(Exchange);
-					code.add(opcodeForStore(node.child(1).getType()));	// store 2nd operand
-					code.add(PushI, 1); 	// add denominator to 1st operand
-					code.add(Memtop);
-					code.add(PushI, node.child(1).getType().getSize());
-					code.add(Subtract);
-					turnAddressIntoValue(code, node.child(1));	// load 2nd operand back
-				}
 				
-				// check 2nd operand for promotion to float or rat
+				// check 2nd operand for promotion to float
 				if (node.child(1).getType() != PrimitiveType.FLOATING && node.child(1).getPromotedType() == PrimitiveType.FLOATING) {
 					code.add(ConvertF); 	// convert 2nd operand to floating
-				}
-				else if (node.child(1).getType() != PrimitiveType.RATIONAL && node.child(1).getPromotedType() == PrimitiveType.RATIONAL) {
-					code.add(PushI, 1); 	// add denominator to 2nd operand
 				}
 				
 				Type type1 = node.child(0).getPromotedType();
@@ -1031,6 +1052,13 @@ public class ASMCodeGenerator {
 			code.add(ASMOpcode.BNegate);	
 		}
 
+		public void visitLeave(ExprListNode node) {
+			newValueCode(node);
+			for (int i = 0; i < node.nChildren(); i++) {
+				code.append(removeValueCode(node.child(i)));
+			}
+			code.add(PStack);
+		}
 		///////////////////////////////////////////////////////////////////////////
 		// leaf nodes (ErrorNode not necessary)
 		public void visit(BooleanConstantNode node) {

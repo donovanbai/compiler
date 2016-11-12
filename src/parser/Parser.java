@@ -15,6 +15,7 @@ import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
 import parseTree.nodeTypes.DeclarationNode;
 import parseTree.nodeTypes.ErrorNode;
+import parseTree.nodeTypes.ExprListNode;
 import parseTree.nodeTypes.FloatConstantNode;
 import parseTree.nodeTypes.IdentifierNode;
 import parseTree.nodeTypes.IfStmtNode;
@@ -317,8 +318,9 @@ public class Parser {
 	// comparisonExpression     -> additiveExpression [> additiveExpression]?
 	// additiveExpression       -> multiplicativeExpression [(+|-) multiplicativeExpression]*  (left-assoc)
 	// multiplicativeExpression -> notExpression [(MULT|/|//) notExpression]*  (left-assoc)
-	// notExpression			-> [!]* atomicExpression (right-assoc)
-	// atomicExpression         -> literal
+	// notExpression			-> [!]* arrayIndexingExpr (right-assoc)
+	// arrayIndexingExpr		-> atomicExpression | identifier[expr]
+	// atomicExpression         -> literal | (expr) | [expr|type] | [expr (,expr)*]
 	// literal                  -> intNumber | identifier | booleanConstant
 
 	private ParseNode parseExpression() {		
@@ -442,11 +444,30 @@ public class Parser {
 			return UnaryOperatorNode.withChild(notToken, child);
 		}
 		else {
-			return parseAtomicExpression();
+			return parseArrayIndexingExpr();
 		}
 	}
 	private boolean startsNotExpression(Token token) {
-		return startsAtomicExpression(token) || token.isLextant(Punctuator.NOT);
+		return startsArrayIndexingExpr(token) || token.isLextant(Punctuator.NOT);
+	}
+	
+	private ParseNode parseArrayIndexingExpr() {
+		if(!startsArrayIndexingExpr(nowReading)) {
+			return syntaxErrorNode("arrayIndexingExpression");
+		}
+		if (!startsIdentifier(nowReading)) return parseAtomicExpression();
+		ParseNode id = parseIdentifier();
+		if (nowReading.isLextant(Punctuator.LSB)) {	// this is array indexing
+			Token indexToken = nowReading;
+			readToken();
+			ParseNode expr = parseExpression();
+			expect(Punctuator.RSB);
+			return BinaryOperatorNode.withChildren(indexToken, id, expr);
+		}
+		return id;
+	}
+	private boolean startsArrayIndexingExpr(Token token) {
+		return startsAtomicExpression(token);
 	}
 	
 	// atomicExpression -> literal
@@ -463,22 +484,36 @@ public class Parser {
 			expect(Punctuator.RRB);
 			return result;
 		}
-		else {
+		else {	// isLSB(nowReading)
+			Token exprListToken = nowReading;
 			readToken();
 			ParseNode result = parseExpression();
-			Token castToken = nowReading;
-			readToken();
-			Token typeToken = nowReading;
-			readToken();
-			expect(Punctuator.RSB);
-			switch (typeToken.getLexeme()) {
-				case "bool": return BinaryOperatorNode.withChildren(castToken, result, new TypeBoolNode(typeToken));
-				case "char": return BinaryOperatorNode.withChildren(castToken, result, new TypeCharNode(typeToken));
-				case "string": return BinaryOperatorNode.withChildren(castToken, result, new TypeStringNode(typeToken));
-				case "int": return BinaryOperatorNode.withChildren(castToken, result, new TypeIntNode(typeToken));
-				case "float": return BinaryOperatorNode.withChildren(castToken, result, new TypeFloatNode(typeToken));
-				case "rat": return BinaryOperatorNode.withChildren(castToken, result, new TypeRatNode(typeToken));
-				default: return syntaxErrorNode("atomic expression");
+			if (nowReading.isLextant(Punctuator.PIPE)) {	// cast
+				Token castToken = nowReading;
+				readToken();
+				Token typeToken = nowReading;
+				readToken();
+				expect(Punctuator.RSB);
+				switch (typeToken.getLexeme()) {
+					case "bool": return BinaryOperatorNode.withChildren(castToken, result, new TypeBoolNode(typeToken));
+					case "char": return BinaryOperatorNode.withChildren(castToken, result, new TypeCharNode(typeToken));
+					case "string": return BinaryOperatorNode.withChildren(castToken, result, new TypeStringNode(typeToken));
+					case "int": return BinaryOperatorNode.withChildren(castToken, result, new TypeIntNode(typeToken));
+					case "float": return BinaryOperatorNode.withChildren(castToken, result, new TypeFloatNode(typeToken));
+					case "rat": return BinaryOperatorNode.withChildren(castToken, result, new TypeRatNode(typeToken));
+					default: return syntaxErrorNode("atomic expression");
+				}
+			}
+			else {	// exprList
+				ExprListNode exprList = new ExprListNode(exprListToken);
+				exprList.appendChild(result);
+				while (nowReading.isLextant(Punctuator.SEPARATOR)) {
+					readToken();
+					ParseNode expr = parseExpression();
+					exprList.appendChild(expr);
+				}
+				expect(Punctuator.RSB);
+				return exprList;
 			}
 		}
 	}

@@ -9,6 +9,7 @@ import asmCodeGenerator.codeStorage.ASMOpcode;
 import lexicalAnalyzer.Punctuator;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
+import semanticAnalyzer.types.TypeLiteral;
 
 
 public class FunctionSignatures extends ArrayList<FunctionSignature> {
@@ -123,22 +124,22 @@ public class FunctionSignatures extends ArrayList<FunctionSignature> {
 			    new FunctionSignature(1, PrimitiveType.BOOLEAN, PrimitiveType.BOOLEAN, PrimitiveType.BOOLEAN)
 		);
 		new FunctionSignatures(Punctuator.PIPE,
-			    new FunctionSignature(1, PrimitiveType.BOOLEAN, PrimitiveType.TYPE_BOOL, PrimitiveType.BOOLEAN),
-			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.TYPE_BOOL, PrimitiveType.BOOLEAN),
-			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.TYPE_CHAR, PrimitiveType.CHARACTER),
-			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER),
-			    new FunctionSignature(1, PrimitiveType.CHARACTER, PrimitiveType.TYPE_RAT, PrimitiveType.RATIONAL),
-			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_BOOL, PrimitiveType.BOOLEAN),
-			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_CHAR, PrimitiveType.CHARACTER),
-			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
-			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER),
-			    new FunctionSignature(1, PrimitiveType.INTEGER, PrimitiveType.TYPE_RAT, PrimitiveType.RATIONAL),
-			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
-			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER),
-			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.TYPE_RAT, PrimitiveType.RATIONAL),
-			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.TYPE_RAT, PrimitiveType.RATIONAL),
-			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.TYPE_FLOAT, PrimitiveType.FLOATING),
-			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.TYPE_INT, PrimitiveType.INTEGER)
+			    new FunctionSignature(1, PrimitiveType.BOOLEAN, TypeLiteral.TYPE_BOOL, PrimitiveType.BOOLEAN),
+			    new FunctionSignature(1, PrimitiveType.CHARACTER, TypeLiteral.TYPE_BOOL, PrimitiveType.BOOLEAN),
+			    new FunctionSignature(1, PrimitiveType.CHARACTER, TypeLiteral.TYPE_CHAR, PrimitiveType.CHARACTER),
+			    new FunctionSignature(1, PrimitiveType.CHARACTER, TypeLiteral.TYPE_INT, PrimitiveType.INTEGER),
+			    new FunctionSignature(1, PrimitiveType.CHARACTER, TypeLiteral.TYPE_RAT, PrimitiveType.RATIONAL),
+			    new FunctionSignature(1, PrimitiveType.INTEGER, TypeLiteral.TYPE_BOOL, PrimitiveType.BOOLEAN),
+			    new FunctionSignature(1, PrimitiveType.INTEGER, TypeLiteral.TYPE_CHAR, PrimitiveType.CHARACTER),
+			    new FunctionSignature(1, PrimitiveType.INTEGER, TypeLiteral.TYPE_FLOAT, PrimitiveType.FLOATING),
+			    new FunctionSignature(1, PrimitiveType.INTEGER, TypeLiteral.TYPE_INT, PrimitiveType.INTEGER),
+			    new FunctionSignature(1, PrimitiveType.INTEGER, TypeLiteral.TYPE_RAT, PrimitiveType.RATIONAL),
+			    new FunctionSignature(1, PrimitiveType.FLOATING, TypeLiteral.TYPE_FLOAT, PrimitiveType.FLOATING),
+			    new FunctionSignature(1, PrimitiveType.FLOATING, TypeLiteral.TYPE_INT, PrimitiveType.INTEGER),
+			    new FunctionSignature(1, PrimitiveType.FLOATING, TypeLiteral.TYPE_RAT, PrimitiveType.RATIONAL),
+			    new FunctionSignature(1, PrimitiveType.RATIONAL, TypeLiteral.TYPE_RAT, PrimitiveType.RATIONAL),
+			    new FunctionSignature(1, PrimitiveType.RATIONAL, TypeLiteral.TYPE_FLOAT, PrimitiveType.FLOATING),
+			    new FunctionSignature(1, PrimitiveType.RATIONAL, TypeLiteral.TYPE_INT, PrimitiveType.INTEGER)
 		);
 		new FunctionSignatures(Punctuator.AND,
 			    new FunctionSignature(ASMOpcode.And, PrimitiveType.BOOLEAN, PrimitiveType.BOOLEAN, PrimitiveType.BOOLEAN)
@@ -160,6 +161,9 @@ public class FunctionSignatures extends ArrayList<FunctionSignature> {
 			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.INTEGER, PrimitiveType.RATIONAL),
 			    new FunctionSignature(1, PrimitiveType.FLOATING, PrimitiveType.INTEGER, PrimitiveType.RATIONAL)
 		);
+		/*new FunctionSignatures(Punctuator.LSB,
+			    new FunctionSignature(1, PrimitiveType.RATIONAL, PrimitiveType.INTEGER, PrimitiveType.RATIONAL),
+		);*/
 		
 		// First, we use the operator itself (in this case the Punctuator ADD) as the key.
 		// Then, we give that key two signatures: one an (INT x INT -> INT) and the other

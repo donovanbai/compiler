@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import lexicalAnalyzer.Lextant;
+import lexicalAnalyzer.Punctuator;
 import logging.PikaLogger;
 import parseTree.ParseNode;
 import parseTree.ParseNodeVisitor;
@@ -15,6 +16,7 @@ import parseTree.nodeTypes.CharConstantNode;
 import parseTree.nodeTypes.MainBlockNode;
 import parseTree.nodeTypes.DeclarationNode;
 import parseTree.nodeTypes.ErrorNode;
+import parseTree.nodeTypes.ExprListNode;
 import parseTree.nodeTypes.FloatConstantNode;
 import parseTree.nodeTypes.IdentifierNode;
 import parseTree.nodeTypes.IfStmtNode;
@@ -33,8 +35,10 @@ import parseTree.nodeTypes.TypeStringNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
 import parseTree.nodeTypes.WhileStmtNode;
 import semanticAnalyzer.signatures.FunctionSignature;
+import semanticAnalyzer.types.CompoundType;
 import semanticAnalyzer.types.PrimitiveType;
 import semanticAnalyzer.types.Type;
+import semanticAnalyzer.types.TypeLiteral;
 import symbolTable.Binding;
 import symbolTable.Scope;
 import symbolTable.SymbolTable;
@@ -158,6 +162,19 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	public void visitLeave(WhileStmtNode node) {
 		
 	}
+	@Override
+	public void visitEnter(ExprListNode node) {
+		
+	}
+	@Override
+	public void visitLeave(ExprListNode node) {
+		assert node.nChildren() > 0;
+		Type childType = node.child(0).getType();
+		for (int i = 1; i < node.nChildren(); i++) {		// check if all the expressions have the same type
+			assert node.child(i).getType() == childType;	// IMPLEMENT CHECKING FOR PROMOTIONS LATER
+		}
+		node.setType(CompoundType.makeParentType(childType));
+	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// expressions
@@ -171,6 +188,15 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		List<Type> childTypes = Arrays.asList(leftType, rightType);
 		
 		Lextant operator = node.getOperator();
+		if (operator == Punctuator.LSB) {
+			if (!(leftType instanceof CompoundType) || rightType != PrimitiveType.INTEGER) {
+				typeCheckError(node, childTypes);
+				node.setType(PrimitiveType.ERROR);
+				return;
+			}
+			node.setType(CompoundType.makeChildType((CompoundType) leftType));
+			return;
+		}
 		FunctionSignature signature = FunctionSignature.signatureOf(operator, childTypes);
 		
 		if(signature.accepts(childTypes)) {
@@ -383,27 +409,27 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	}
 	@Override
 	public void visit(TypeBoolNode node){
-		node.setType(PrimitiveType.TYPE_BOOL);
+		node.setType(TypeLiteral.TYPE_BOOL);
 	}
 	@Override
 	public void visit(TypeCharNode node){
-		node.setType(PrimitiveType.TYPE_CHAR);
+		node.setType(TypeLiteral.TYPE_CHAR);
 	}
 	@Override
 	public void visit(TypeFloatNode node){
-		node.setType(PrimitiveType.TYPE_FLOAT);
+		node.setType(TypeLiteral.TYPE_FLOAT);
 	}
 	@Override
 	public void visit(TypeIntNode node){
-		node.setType(PrimitiveType.TYPE_INT);
+		node.setType(TypeLiteral.TYPE_INT);
 	}
 	@Override
 	public void visit(TypeStringNode node){
-		node.setType(PrimitiveType.TYPE_STRING);
+		node.setType(TypeLiteral.TYPE_STRING);
 	}
 	@Override
 	public void visit(TypeRatNode node){
-		node.setType(PrimitiveType.TYPE_RAT);
+		node.setType(TypeLiteral.TYPE_RAT);
 	}
 
 	@Override
