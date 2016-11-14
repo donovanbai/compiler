@@ -23,6 +23,7 @@ public enum Keyword implements Lextant {
 	ELSE("else"),
 	WHILE("while"),
 	NEW("new"),
+	CLONE("clone"),
 	RELEASE("release"),
 	LENGTH("length");
 

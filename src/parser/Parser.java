@@ -13,6 +13,7 @@ import parseTree.nodeTypes.BinaryOperatorNode;
 import parseTree.nodeTypes.BlockStmtNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
+import parseTree.nodeTypes.CloneNode;
 import parseTree.nodeTypes.DeclarationNode;
 import parseTree.nodeTypes.ErrorNode;
 import parseTree.nodeTypes.ExprListNode;
@@ -429,7 +430,7 @@ public class Parser {
 		return startsNotExpression(token);
 	}
 	
-	private ParseNode parseNotExpression() {
+	private ParseNode parseNotExpression() {	// also includes clone and length expressions
 		if(!startsNotExpression(nowReading)) {
 			return syntaxErrorNode("notExpression");
 		}
@@ -439,12 +440,18 @@ public class Parser {
 			ParseNode child = parseNotExpression();
 			return UnaryOperatorNode.withChild(notToken, child);
 		}
+		else if (Keyword.forLexeme(nowReading.getLexeme()) == Keyword.CLONE) {
+			Token cloneToken = nowReading;
+			readToken();
+			ParseNode id = parseIdentifier();
+			return CloneNode.withChild(cloneToken, id);
+		}
 		else {
 			return parseArrayIndexingExpr();
 		}
 	}
 	private boolean startsNotExpression(Token token) {
-		return startsArrayIndexingExpr(token) || token.isLextant(Punctuator.NOT);
+		return startsArrayIndexingExpr(token) || token.isLextant(Punctuator.NOT) || Keyword.forLexeme(token.getLexeme()) == Keyword.CLONE;
 	}
 	
 	private ParseNode parseArrayIndexingExpr() {

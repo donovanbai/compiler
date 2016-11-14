@@ -14,6 +14,7 @@ import parseTree.nodeTypes.BinaryOperatorNode;
 import parseTree.nodeTypes.BlockStmtNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
+import parseTree.nodeTypes.CloneNode;
 import parseTree.nodeTypes.MainBlockNode;
 import parseTree.nodeTypes.NewArrayNode;
 import parseTree.nodeTypes.DeclarationNode;
@@ -213,6 +214,15 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 			CompoundType nodeType = CompoundType.makeParentType(PrimitiveType.RATIONAL);
 			node.setType(nodeType);
 		}
+	}
+	
+	@Override
+	public void visitEnter(CloneNode node) {
+		
+	}
+	@Override
+	public void visitLeave(CloneNode node) {
+		node.setType(node.child(0).getType());
 	}
 
 	///////////////////////////////////////////////////////////////////////////

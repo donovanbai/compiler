@@ -17,6 +17,7 @@ import parseTree.nodeTypes.BinaryOperatorNode;
 import parseTree.nodeTypes.BlockStmtNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
+import parseTree.nodeTypes.CloneNode;
 import parseTree.nodeTypes.MainBlockNode;
 import parseTree.nodeTypes.NewArrayNode;
 import parseTree.nodeTypes.DeclarationNode;
@@ -1258,6 +1259,10 @@ public class ASMCodeGenerator {
 			code.add(PushI, 4);
 			code.add(Subtract);											// m-4
 			code.add(LoadI); 											// a
+		}
+		
+		public void visitLeave(CloneNode node) {
+			newAddressCode(node);
 		}
 		
 		///////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,7 @@ import parseTree.nodeTypes.BinaryOperatorNode;
 import parseTree.nodeTypes.BlockStmtNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
+import parseTree.nodeTypes.CloneNode;
 import parseTree.nodeTypes.MainBlockNode;
 import parseTree.nodeTypes.NewArrayNode;
 import parseTree.nodeTypes.DeclarationNode;
@@ -65,6 +66,9 @@ public interface ParseNodeVisitor {
 	
 	void visitEnter(NewArrayNode node);
 	void visitLeave(NewArrayNode node);
+	
+	void visitEnter(CloneNode node);
+	void visitLeave(CloneNode node);
 
 	// leaf nodes: visitLeaf only
 	void visit(BooleanConstantNode node);
@@ -167,6 +171,12 @@ public interface ParseNodeVisitor {
 			defaultVisitEnter(node);
 		}
 		public void visitLeave(NewArrayNode node) {
+			defaultVisitLeave(node);
+		}
+		public void visitEnter(CloneNode node) {
+			defaultVisitEnter(node);
+		}
+		public void visitLeave(CloneNode node) {
 			defaultVisitLeave(node);
 		}
 		

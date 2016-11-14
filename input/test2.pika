@@ -1,7 +1,6 @@
 exec {
 	var a := [1, 2, 3, 4, 5].
-	#var b := new [int](5).
+	var b := clone a. 
 	print a[0], _n_.
-	a[0] := 6.
-	print a[0], _n_.
+	print b[0], _n_.
 }
