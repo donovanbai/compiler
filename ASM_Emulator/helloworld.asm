@@ -13,5 +13,6 @@ DataC	100			// d
 DataC	33			// !
 DataC	0
 PushD   Hello
+PStack
 Printf
 Halt

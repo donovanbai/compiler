@@ -7,6 +7,7 @@ import java.util.Map;
 
 import asmCodeGenerator.codeStorage.ASMCodeFragment;
 import asmCodeGenerator.codeStorage.ASMOpcode;
+import asmCodeGenerator.runtime.MemoryManager;
 import asmCodeGenerator.runtime.RunTime;
 import lexicalAnalyzer.Lextant;
 import lexicalAnalyzer.Punctuator;
@@ -57,10 +58,11 @@ public class ASMCodeGenerator {
 	public ASMCodeFragment makeASM() {
 		ASMCodeFragment code = new ASMCodeFragment(GENERATES_VOID);
 		
+		code.append(MemoryManager.codeForInitialization());
 		code.append( RunTime.getEnvironment() );
 		code.append( globalVariableBlockASM() );
 		code.append( programASM() );
-//		code.append( MemoryManager.codeForAfterApplication() );
+		code.append( MemoryManager.codeForAfterApplication() );
 		
 		return code;
 	}
@@ -233,6 +235,16 @@ public class ASMCodeGenerator {
 				code.add(StoreI);
 				code.add(StoreI);
 			}
+			else if (node.child(1).getType() instanceof CompoundType) {
+				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
+				ASMCodeFragment rvalue = removeAddressCode(node.child(1));
+				
+				code.append(lvalue);
+				code.append(rvalue);
+				
+				Type type = node.getType();
+				code.add(opcodeForStore(type));
+			}
 			else {
 				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
 				ASMCodeFragment rvalue = removeValueCode(node.child(1));
@@ -399,6 +411,9 @@ public class ASMCodeGenerator {
 			}
 			else if (operator == Punctuator.RATIONALIZE) {
 				visitRationalizeOperatorNode(node);
+			}
+			else if (operator == Punctuator.LSB) {
+				visitIndexingOperatorNode(node);
 			}
 			else {	// +  -  *  /  &&  ||
 				visitNormalBinaryOperatorNode(node);
@@ -849,6 +864,46 @@ public class ASMCodeGenerator {
 			
 			simplifyRational(12, 8, 4);
 		}
+		private void visitIndexingOperatorNode(BinaryOperatorNode node) {
+			// index of element = starting address + 16 + index*size of element
+			newAddressCode(node);
+			ASMCodeFragment arg1 = removeValueCode(node.child(0)); 	
+			ASMCodeFragment arg2 = removeValueCode(node.child(1));	
+			code.append(arg1); 		// a
+			code.append(arg2); 		// a i
+			// check if index is >= 0
+			code.add(Duplicate); 	// a i i
+			code.add(JumpNeg, RunTime.INVALID_INDEX_RUNTIME_ERROR);
+			// check if index < length
+			code.add(Memtop);
+			code.add(PushI, 4);
+			code.add(Subtract);		// a i m-4
+			code.add(Exchange); 	// a m-4 i
+			code.add(StoreI); 		// a
+			code.add(Duplicate); 	// a a
+			code.add(PushI, 12); 	// a a 12
+			code.add(Add); 			// a a+12
+			code.add(LoadI); 		// a length
+			code.add(Memtop);
+			code.add(PushI, 4);
+			code.add(Subtract);		// a length m-4
+			code.add(LoadI); 		// a length i
+			code.add(Subtract); 	// a length-i
+			code.add(Duplicate); 	// a length-i length-i
+			code.add(JumpFalse, RunTime.INVALID_INDEX_RUNTIME_ERROR); 	// a length-i
+			code.add(JumpNeg, RunTime.INVALID_INDEX_RUNTIME_ERROR);		// a
+			code.add(Memtop);
+			code.add(PushI, 4);
+			code.add(Subtract);		// a m-4
+			code.add(LoadI); 		// a i
+			
+			Type elementType = CompoundType.makeChildType((CompoundType)node.child(0).getType());
+			code.add(PushI, elementType.getSize());
+			code.add(Multiply);
+			code.add(Add);
+			code.add(PushI, 16);
+			code.add(Add);
+		}
 		private void visitNormalBinaryOperatorNode(BinaryOperatorNode node) {	// +  -  *  /  &&  ||
 			newValueCode(node);
 			Lextant operator = node.getOperator();
@@ -1052,12 +1107,58 @@ public class ASMCodeGenerator {
 			code.add(ASMOpcode.BNegate);	
 		}
 
-		public void visitLeave(ExprListNode node) {
-			newValueCode(node);
+		public void visitLeave(ExprListNode node) {		// DOES NOT WORK FOR RATIONALS OR PROMOTIONS RIGHT NOW
+			// store record on heap
+			// type id(4), status(4), subtype size(4), length(4), elements(subtype size * length)
+
+			newAddressCode(node);
+			Type subtype = node.child(0).getType();
+			int subtypeSize = subtype.getSize();
+			int length = node.nChildren();
+			int numBytes = 16 + subtypeSize * length;
+			code.add(PushI, numBytes);									// numBytes
+			code.add(Call, MemoryManager.MEM_MANAGER_ALLOCATE); 		// address of space (refer to a)
+			code.add(Duplicate); 										// a a
+			code.add(PushI, 7); 										// a a 7
+			code.add(StoreI);	// store type id 						// a
+			code.add(Duplicate); 										// a a
+			code.add(PushI, 4); 										// a a 4
+			code.add(Add); 												// a a+4
+			code.add(PushI, 0); 										// a a+4 0
+			code.add(StoreC); 	// store immutability status			// a
+			code.add(Duplicate); 										// a a
+			code.add(PushI, 5); 										// a a 5
+			code.add(Add); 												// a a+5
+			if (subtype instanceof CompoundType) code.add(PushI, 1);	// a a+5 1									
+			else code.add(PushI, 0);									// a a+5 0
+			code.add(StoreC); 	// store subtype-is-reference status	// a
+			code.add(Duplicate); 										// a a
+			code.add(PushI, 6); 										// a a 6
+			code.add(Add); 												// a a+6
+			code.add(PushI, 0); 										// a a+6 0
+			code.add(StoreC); 	// store is-deleted status				// a
+			code.add(Duplicate); 										// a a
+			code.add(PushI, 7); 										// a a 7
+			code.add(Add); 												// a a+7
+			code.add(PushI, 0); 										// a a+7 0
+			code.add(StoreC); 	// store is-permanent status			// a
+			code.add(Duplicate); 										// a a
+			code.add(PushI, 8); 										// a a 8
+			code.add(Add); 												// a a+8
+			code.add(PushI, subtypeSize); 								// a a+8 s
+			code.add(StoreI); 	// store subtype size					// a
+			code.add(Duplicate); 										// a a
+			code.add(PushI, 12); 										// a a 12
+			code.add(Add); 												// a a+12
+			code.add(PushI, length); 									// a a+12 l
+			code.add(StoreI);	// store array length					// a
 			for (int i = 0; i < node.nChildren(); i++) {
-				code.append(removeValueCode(node.child(i)));
+				code.add(Duplicate);									// a a
+				code.add(PushI, 16 + i * subtypeSize); 					// a a offset
+				code.add(Add); 											// a a+offset
+				code.append(removeValueCode(node.child(i)));			// a a+offset arr[i]
+				code.add(opcodeForStore(subtype));						// a
 			}
-			code.add(PStack);
 		}
 		///////////////////////////////////////////////////////////////////////////
 		// leaf nodes (ErrorNode not necessary)

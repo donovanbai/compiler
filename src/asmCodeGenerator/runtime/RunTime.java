@@ -21,6 +21,7 @@ public class RunTime {
 	public static final String INTEGER_DIVIDE_BY_ZERO_RUNTIME_ERROR = "$$i-divide-by-zero";
 	public static final String FLOATING_DIVIDE_BY_ZERO_RUNTIME_ERROR = "$$f-divide-by-zero";
 	public static final String ZERO_DENOMINATOR_RUNTIME_ERROR = "$$zero-denominator";
+	public static final String INVALID_INDEX_RUNTIME_ERROR = "$$invalid-index";
 
 	private ASMCodeFragment environmentASM() {
 		ASMCodeFragment result = new ASMCodeFragment(GENERATES_VOID);
@@ -71,6 +72,7 @@ public class RunTime {
 		integerDivideByZeroError(frag);
 		floatingDivideByZeroError(frag);
 		zeroDenominatorError(frag);
+		invalidIndexError(frag);
 		
 		return frag;
 	}
@@ -115,6 +117,16 @@ public class RunTime {
 		frag.add(Label, ZERO_DENOMINATOR_RUNTIME_ERROR);
 		frag.add(PushD, errorMessage);
 		frag.add(Jump, GENERAL_RUNTIME_ERROR);
+	}
+	private void invalidIndexError(ASMCodeFragment frag) {
+		String errorMessage = "$errors-invalid-index";
+		
+		frag.add(DLabel, errorMessage);
+		frag.add(DataS, "index is invalid");
+		
+		frag.add(Label, INVALID_INDEX_RUNTIME_ERROR);
+		frag.add(PushD, errorMessage);
+		frag.add(Jump, GENERAL_RUNTIME_ERROR);	
 	}
 	
 	public static ASMCodeFragment getEnvironment() {
