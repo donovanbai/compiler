@@ -6,6 +6,7 @@ import parseTree.nodeTypes.BlockStmtNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
 import parseTree.nodeTypes.MainBlockNode;
+import parseTree.nodeTypes.NewArrayNode;
 import parseTree.nodeTypes.DeclarationNode;
 import parseTree.nodeTypes.ErrorNode;
 import parseTree.nodeTypes.ExprListNode;
@@ -18,12 +19,7 @@ import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
-import parseTree.nodeTypes.TypeBoolNode;
-import parseTree.nodeTypes.TypeCharNode;
-import parseTree.nodeTypes.TypeFloatNode;
-import parseTree.nodeTypes.TypeIntNode;
-import parseTree.nodeTypes.TypeRatNode;
-import parseTree.nodeTypes.TypeStringNode;
+import parseTree.nodeTypes.TypeNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
 import parseTree.nodeTypes.WhileStmtNode;
 
@@ -66,6 +62,9 @@ public interface ParseNodeVisitor {
 	
 	void visitEnter(ExprListNode node);
 	void visitLeave(ExprListNode node);
+	
+	void visitEnter(NewArrayNode node);
+	void visitLeave(NewArrayNode node);
 
 	// leaf nodes: visitLeaf only
 	void visit(BooleanConstantNode node);
@@ -77,12 +76,7 @@ public interface ParseNodeVisitor {
 	void visit(FloatConstantNode node);
 	void visit(CharConstantNode node);
 	void visit(StringConstantNode node);
-	void visit(TypeBoolNode node);
-	void visit(TypeCharNode node);
-	void visit(TypeFloatNode node);
-	void visit(TypeIntNode node);
-	void visit(TypeStringNode node);
-	void visit(TypeRatNode node);
+	void visit(TypeNode node);
 	
 	public static class Default implements ParseNodeVisitor
 	{
@@ -169,6 +163,12 @@ public interface ParseNodeVisitor {
 		public void visitLeave(ExprListNode node) {
 			defaultVisitLeave(node);
 		}
+		public void visitEnter(NewArrayNode node) {
+			defaultVisitEnter(node);
+		}
+		public void visitLeave(NewArrayNode node) {
+			defaultVisitLeave(node);
+		}
 		
 
 		public void visit(BooleanConstantNode node) {
@@ -198,22 +198,7 @@ public interface ParseNodeVisitor {
 		public void visit(StringConstantNode node) {
 			defaultVisitForLeaf(node);
 		}
-		public void visit(TypeBoolNode node) {
-			defaultVisitForLeaf(node);
-		}
-		public void visit(TypeCharNode node) {
-			defaultVisitForLeaf(node);
-		}
-		public void visit(TypeFloatNode node) {
-			defaultVisitForLeaf(node);
-		}
-		public void visit(TypeIntNode node) {
-			defaultVisitForLeaf(node);
-		}
-		public void visit(TypeStringNode node) {
-			defaultVisitForLeaf(node);
-		}
-		public void visit(TypeRatNode node) {
+		public void visit(TypeNode node) {
 			defaultVisitForLeaf(node);
 		}
 	}

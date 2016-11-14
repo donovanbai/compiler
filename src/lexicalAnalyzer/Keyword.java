@@ -22,6 +22,7 @@ public enum Keyword implements Lextant {
 	IF("if"),
 	ELSE("else"),
 	WHILE("while"),
+	NEW("new"),
 	RELEASE("release"),
 	LENGTH("length");
 
@@ -50,6 +51,10 @@ public enum Keyword implements Lextant {
 	}
 	public static boolean isAKeyword(String lexeme) {
 		return forLexeme(lexeme) != NULL_KEYWORD;
+	}
+	public static boolean isAType(String lexeme) {
+		Keyword k = forLexeme(lexeme);
+		return k == BOOL || k == CHAR || k == STRING || k == INT || k == FLOAT || k == RAT;
 	}
 	
 	/*   the following hashtable lookup can replace the serial-search implementation of forLexeme() above. It is faster but less clear. 

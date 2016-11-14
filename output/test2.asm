@@ -187,78 +187,43 @@
         Label        $$invalid-index           
         PushD        $errors-invalid-index     
         Jump         $$general-runtime-error   
+        DLabel       $errors-negative-length   
+        DataC        97                        %% "array length is negative"
+        DataC        114                       
+        DataC        114                       
+        DataC        97                        
+        DataC        121                       
+        DataC        32                        
+        DataC        108                       
+        DataC        101                       
+        DataC        110                       
+        DataC        103                       
+        DataC        116                       
+        DataC        104                       
+        DataC        32                        
+        DataC        105                       
+        DataC        115                       
+        DataC        32                        
+        DataC        110                       
+        DataC        101                       
+        DataC        103                       
+        DataC        97                        
+        DataC        116                       
+        DataC        105                       
+        DataC        118                       
+        DataC        101                       
+        DataC        0                         
+        Label        $$negative-length         
+        PushD        $errors-negative-length   
+        Jump         $$general-runtime-error   
         DLabel       $usable-memory-start      
         DLabel       $global-memory-block      
-        DataZ        8                         
+        DataZ        4                         
         Label        $$main                    
         PushD        $global-memory-block      
         PushI        0                         
         Add                                    %% a
-        PushI        21                        
-        Call         -mem-manager-allocate     
-        Duplicate                              
-        PushI        7                         
-        StoreI                                 
-        Duplicate                              
-        PushI        4                         
-        Add                                    
-        PushI        0                         
-        StoreC                                 
-        Duplicate                              
-        PushI        5                         
-        Add                                    
-        PushI        0                         
-        StoreC                                 
-        Duplicate                              
-        PushI        6                         
-        Add                                    
-        PushI        0                         
-        StoreC                                 
-        Duplicate                              
-        PushI        7                         
-        Add                                    
-        PushI        0                         
-        StoreC                                 
-        Duplicate                              
-        PushI        8                         
-        Add                                    
-        PushI        1                         
-        StoreI                                 
-        Duplicate                              
-        PushI        12                        
-        Add                                    
-        PushI        5                         
-        StoreI                                 
-        Duplicate                              
-        PushI        16                        
-        Add                                    
-        PushI        115                       
-        StoreC                                 
-        Duplicate                              
-        PushI        17                        
-        Add                                    
-        PushI        97                        
-        StoreC                                 
-        Duplicate                              
-        PushI        18                        
-        Add                                    
-        PushI        105                       
-        StoreC                                 
-        Duplicate                              
-        PushI        19                        
-        Add                                    
-        PushI        100                       
-        StoreC                                 
-        Duplicate                              
-        PushI        20                        
-        Add                                    
-        PushI        100                       
-        StoreC                                 
-        StoreI                                 
-        PushD        $global-memory-block      
-        PushI        4                         
-        Add                                    %% b
-        PushI        40                        
+        PushI        36                        
         Call         -mem-manager-allocate     
         Duplicate                              
         PushI        7                         
@@ -291,7 +256,7 @@
         Duplicate                              
         PushI        12                        
         Add                                    
-        PushI        6                         
+        PushI        5                         
         StoreI                                 
         Duplicate                              
         PushI        16                        
@@ -318,17 +283,85 @@
         Add                                    
         PushI        5                         
         StoreI                                 
+        StoreI                                 
+        PushD        $global-memory-block      
+        PushI        0                         
+        Add                                    %% a
+        LoadI                                  
+        PushI        0                         
         Duplicate                              
-        PushI        36                        
+        JumpNeg      $$invalid-index           
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Duplicate                              
+        PushI        12                        
+        Add                                    
+        LoadI                                  
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Subtract                               
+        Duplicate                              
+        JumpFalse    $$invalid-index           
+        JumpNeg      $$invalid-index           
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        PushI        4                         
+        Multiply                               
+        Add                                    
+        PushI        16                        
+        Add                                    
+        LoadI                                  
+        PushD        $print-format-integer     
+        Printf                                 
+        PushD        $print-format-newline     
+        Printf                                 
+        PushD        $global-memory-block      
+        PushI        0                         
+        Add                                    %% a
+        LoadI                                  
+        PushI        0                         
+        Duplicate                              
+        JumpNeg      $$invalid-index           
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        Exchange                               
+        StoreI                                 
+        Duplicate                              
+        PushI        12                        
+        Add                                    
+        LoadI                                  
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        Subtract                               
+        Duplicate                              
+        JumpFalse    $$invalid-index           
+        JumpNeg      $$invalid-index           
+        Memtop                                 
+        PushI        4                         
+        Subtract                               
+        LoadI                                  
+        PushI        4                         
+        Multiply                               
+        Add                                    
+        PushI        16                        
         Add                                    
         PushI        6                         
         StoreI                                 
-        StoreI                                 
         PushD        $global-memory-block      
-        PushI        4                         
-        Add                                    %% b
+        PushI        0                         
+        Add                                    %% a
         LoadI                                  
-        PushI        5                         
+        PushI        0                         
         Duplicate                              
         JumpNeg      $$invalid-index           
         Memtop                                 

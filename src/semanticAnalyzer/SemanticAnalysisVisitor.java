@@ -3,6 +3,7 @@ package semanticAnalyzer;
 import java.util.Arrays;
 import java.util.List;
 
+import lexicalAnalyzer.Keyword;
 import lexicalAnalyzer.Lextant;
 import lexicalAnalyzer.Punctuator;
 import logging.PikaLogger;
@@ -14,6 +15,7 @@ import parseTree.nodeTypes.BlockStmtNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
 import parseTree.nodeTypes.MainBlockNode;
+import parseTree.nodeTypes.NewArrayNode;
 import parseTree.nodeTypes.DeclarationNode;
 import parseTree.nodeTypes.ErrorNode;
 import parseTree.nodeTypes.ExprListNode;
@@ -26,12 +28,7 @@ import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
-import parseTree.nodeTypes.TypeBoolNode;
-import parseTree.nodeTypes.TypeCharNode;
-import parseTree.nodeTypes.TypeFloatNode;
-import parseTree.nodeTypes.TypeIntNode;
-import parseTree.nodeTypes.TypeRatNode;
-import parseTree.nodeTypes.TypeStringNode;
+import parseTree.nodeTypes.TypeNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
 import parseTree.nodeTypes.WhileStmtNode;
 import semanticAnalyzer.signatures.FunctionSignature;
@@ -100,42 +97,49 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	}
 	@Override
 	public void visitLeave(AssignmentNode node) {
-		// check if identifier is mutable
-		IdentifierNode identifierNode = (IdentifierNode) node.child(0);
-		String identifier = identifierNode.getToken().getLexeme();
-
-		boolean foundIdentifier = false;
-		boolean isMutable = false;
-		ParseNode current = node;
-		while (current != null) {
-			SymbolTable table = current.getLocalScope().getSymbolTable();
-			if (table.containsKey(identifier)) {
-				foundIdentifier = true;
-				Binding binding = table.lookup(identifier);
-				if (binding.isMutable()) isMutable = true;
-				break;
+		if (node.child(0) instanceof IdentifierNode) {
+			// check if identifier is mutable
+			IdentifierNode identifierNode = (IdentifierNode) node.child(0);
+			String identifier = identifierNode.getToken().getLexeme();
+	
+			boolean foundIdentifier = false;
+			boolean isMutable = false;
+			ParseNode current = node;
+			while (current != null) {
+				SymbolTable table = current.getLocalScope().getSymbolTable();
+				if (table.containsKey(identifier)) {
+					foundIdentifier = true;
+					Binding binding = table.lookup(identifier);
+					if (binding.isMutable()) isMutable = true;
+					break;
+				}
+				current = current.getParent();
 			}
-			current = current.getParent();
-		}
-		
-		if (!foundIdentifier) {
-			logError("undeclared identifier at " + node.getToken().getLocation());
-		}
-		else if (!isMutable) {
-			logError("assignment statement contains an immutable identifier at " + node.getToken().getLocation());
-		}
-		else {
-			ParseNode initializer = node.child(1);
-			// check if types match
-			Type identifierType = identifierNode.getType();
-			Type initializerType = initializer.getType();
-			if (identifierType != initializerType) {
-				logError("bad assignment: types don't match at " + node.getToken().getLocation());
+			
+			if (!foundIdentifier) {
+				logError("undeclared identifier at " + node.getToken().getLocation());
+			}
+			else if (!isMutable) {
+				logError("assignment statement contains an immutable identifier at " + node.getToken().getLocation());
 			}
 			else {
+				ParseNode initializer = node.child(1);
+				// check if types match
+				Type identifierType = identifierNode.getType();
+				Type initializerType = initializer.getType();
+				if (identifierType != initializerType) {
+					logError("bad assignment: types don't match at " + node.getToken().getLocation());
+					return;
+				}
 				node.setType(initializerType);
-				
 			}
+		}
+		else {	// if it's array indexing eg. a[i]
+			if (node.child(0).getType() != node.child(1).getType()) {
+				logError("bad assignment: types don't match at " + node.getToken().getLocation());
+				return;
+			}
+			node.setType(node.child(1).getType());
 		}
 	}
 	@Override
@@ -174,6 +178,41 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 			assert node.child(i).getType() == childType;	// IMPLEMENT CHECKING FOR PROMOTIONS LATER
 		}
 		node.setType(CompoundType.makeParentType(childType));
+	}
+	@Override
+	public void visitEnter(NewArrayNode node) {
+
+	}
+	@Override
+	public void visitLeave(NewArrayNode node) {
+		// check that the expression is type int
+		if (node.child(1).getType() != PrimitiveType.INTEGER) logError("empty array creation: expression must be type integer");
+		
+		Type childType = node.child(0).getType();
+		if (childType == TypeLiteral.TYPE_BOOL) {
+			CompoundType nodeType = CompoundType.makeParentType(PrimitiveType.BOOLEAN);
+			node.setType(nodeType);
+		}
+		else if (childType == TypeLiteral.TYPE_CHAR) {
+			CompoundType nodeType = CompoundType.makeParentType(PrimitiveType.CHARACTER);
+			node.setType(nodeType);
+		}
+		else if (childType == TypeLiteral.TYPE_STRING) {
+			CompoundType nodeType = CompoundType.makeParentType(PrimitiveType.STRING);
+			node.setType(nodeType);
+		}
+		else if (childType == TypeLiteral.TYPE_INT) {
+			CompoundType nodeType = CompoundType.makeParentType(PrimitiveType.INTEGER);
+			node.setType(nodeType);
+		}
+		else if (childType == TypeLiteral.TYPE_FLOAT) {
+			CompoundType nodeType = CompoundType.makeParentType(PrimitiveType.FLOATING);
+			node.setType(nodeType);
+		}
+		else if (childType == TypeLiteral.TYPE_RAT) {
+			CompoundType nodeType = CompoundType.makeParentType(PrimitiveType.RATIONAL);
+			node.setType(nodeType);
+		}
 	}
 
 	///////////////////////////////////////////////////////////////////////////
@@ -408,28 +447,16 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 		node.setType(PrimitiveType.STRING);
 	}
 	@Override
-	public void visit(TypeBoolNode node){
-		node.setType(TypeLiteral.TYPE_BOOL);
-	}
-	@Override
-	public void visit(TypeCharNode node){
-		node.setType(TypeLiteral.TYPE_CHAR);
-	}
-	@Override
-	public void visit(TypeFloatNode node){
-		node.setType(TypeLiteral.TYPE_FLOAT);
-	}
-	@Override
-	public void visit(TypeIntNode node){
-		node.setType(TypeLiteral.TYPE_INT);
-	}
-	@Override
-	public void visit(TypeStringNode node){
-		node.setType(TypeLiteral.TYPE_STRING);
-	}
-	@Override
-	public void visit(TypeRatNode node){
-		node.setType(TypeLiteral.TYPE_RAT);
+	public void visit(TypeNode node){
+		assert Keyword.isAType(node.getToken().getLexeme());
+		switch(node.getToken().getLexeme()) {
+			case "bool": node.setType(TypeLiteral.TYPE_BOOL); break;
+			case "char": node.setType(TypeLiteral.TYPE_CHAR); break;
+			case "string": node.setType(TypeLiteral.TYPE_STRING); break;
+			case "int": node.setType(TypeLiteral.TYPE_INT); break;
+			case "float": node.setType(TypeLiteral.TYPE_FLOAT); break;
+			case "rat": node.setType(TypeLiteral.TYPE_RAT); break;
+		}
 	}
 
 	@Override

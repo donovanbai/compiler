@@ -18,6 +18,7 @@ import parseTree.nodeTypes.BlockStmtNode;
 import parseTree.nodeTypes.BooleanConstantNode;
 import parseTree.nodeTypes.CharConstantNode;
 import parseTree.nodeTypes.MainBlockNode;
+import parseTree.nodeTypes.NewArrayNode;
 import parseTree.nodeTypes.DeclarationNode;
 import parseTree.nodeTypes.ExprListNode;
 import parseTree.nodeTypes.FloatConstantNode;
@@ -131,7 +132,7 @@ public class ASMCodeGenerator {
 			makeFragmentValueCode(frag, node);
 			return frag;
 		}		
-		private ASMCodeFragment removeAddressCode(ParseNode node) {
+		ASMCodeFragment removeAddressCode(ParseNode node) {
 			ASMCodeFragment frag = getAndRemoveCode(node);
 			assert frag.isAddress();
 			return frag;
@@ -263,14 +264,25 @@ public class ASMCodeGenerator {
 				ASMCodeFragment rvalue = removeVoidCode(node.child(1));
 				code.append(rvalue);
 			}
-			else if (node.child(1).getType() == PrimitiveType.RATIONAL) {
-				appendAddressOfNumerator(code, (IdentifierNode)node.child(0));
-				ASMCodeFragment rvalue = removeValueCode(node.child(1));
-				code.append(rvalue);
-				appendAddressOfDenominator(code, (IdentifierNode)node.child(0));
-				code.add(Exchange);
-				code.add(StoreI);
-				code.add(StoreI);
+			else if (node.child(1).getType() == PrimitiveType.RATIONAL) {		
+				code.append(removeAddressCode(node.child(0))); 	// a
+				code.append(removeValueCode(node.child(1))); 	// a n d
+				code.add(Memtop);
+				code.add(PushI, 4);
+				code.add(Subtract); 			// a n d m-4
+				code.add(Exchange); 			// a n m-4 d
+				code.add(StoreI); 				// a n
+				code.add(Exchange); 			// n a
+				code.add(Duplicate); 			// n a a
+				code.add(PushI, 4); 			// n a a 4
+				code.add(Add); 					// n a a+4
+				code.add(Memtop);
+				code.add(PushI, 4);
+				code.add(Subtract);  			// n a a+4 m-4
+				code.add(LoadI); 				// n a a+4 d
+				code.add(StoreI); 				// n a
+				code.add(Exchange); 			// a n
+				code.add(StoreI); 				//
 			}
 			else {
 				ASMCodeFragment lvalue = removeAddressCode(node.child(0));	
@@ -1152,14 +1164,102 @@ public class ASMCodeGenerator {
 			code.add(Add); 												// a a+12
 			code.add(PushI, length); 									// a a+12 l
 			code.add(StoreI);	// store array length					// a
-			for (int i = 0; i < node.nChildren(); i++) {
-				code.add(Duplicate);									// a a
-				code.add(PushI, 16 + i * subtypeSize); 					// a a offset
-				code.add(Add); 											// a a+offset
-				code.append(removeValueCode(node.child(i)));			// a a+offset arr[i]
-				code.add(opcodeForStore(subtype));						// a
+			if (subtype != PrimitiveType.RATIONAL) {
+				for (int i = 0; i < node.nChildren(); i++) {
+					code.add(Duplicate);									// a a
+					code.add(PushI, 16 + i * subtypeSize); 					// a a offset
+					code.add(Add); 											// a a+offset
+					code.append(removeValueCode(node.child(i)));			// a a+offset arr[i]
+					code.add(opcodeForStore(subtype));						// a
+				}
+			}
+			else {
+				for (int i = 0; i < node.nChildren(); i++) {
+					code.add(Duplicate);									// a a
+					code.add(PushI, 16 + i * subtypeSize); 					// a a offset
+					code.add(Add); 											// a a+offset
+					code.append(removeValueCode(node.child(i)));			// a a+offset1 n d
+					code.add(Memtop);
+					code.add(PushI, 4);
+					code.add(Subtract); 									// a a+offset1 n d m-4
+					code.add(Exchange); 									// a a+offset1 n m-4 d
+					code.add(StoreI); 										// a a+offset1 n
+					code.add(StoreI); 										// a
+					code.add(Duplicate); 									// a a
+					code.add(PushI, 16 + i * subtypeSize + 4); 				// a a offset2
+					code.add(Add); 											// a a+offset2
+					code.add(Memtop);
+					code.add(PushI, 4);
+					code.add(Subtract);										// a a+offset2 m-4
+					code.add(LoadI); 										// a a+offset2 d
+					code.add(StoreI); 										// a
+				}
 			}
 		}
+		
+		public void visitLeave(NewArrayNode node) {
+			// store record on heap
+			// type id(4), status(4), subtype size(4), length(4), elements(subtype size * length)
+			
+			newAddressCode(node);
+			code.append(removeValueCode(node.child(1)));				// l
+			// if n is negative, issue an error
+			code.add(Duplicate); 										// l l
+			code.add(Duplicate); 										// l l l
+			code.add(JumpNeg, RunTime.NEGATIVE_LENGTH_RUNTIME_ERROR); 	// l l
+			
+			Type subtype = CompoundType.makeChildType((CompoundType) node.getType());
+			int subtypeSize = subtype.getSize();
+			code.add(PushI, subtypeSize);								// l l s
+			code.add(Multiply); 										// l l*s
+			code.add(PushI, 16); 										// l l*s 16
+			code.add(Add); 												// l #bytes
+			code.add(Call, MemoryManager.MEM_MANAGER_ALLOCATE); 		// l address of space (refer to as a)
+			code.add(Duplicate); 										// l a a
+			code.add(PushI, 7); 										// l a a 7
+			code.add(StoreI);	// store type id 						// l a
+			code.add(Duplicate); 										// l a a
+			code.add(PushI, 4); 										// l a a 4
+			code.add(Add); 												// l a a+4
+			code.add(PushI, 0); 										// l a a+4 0
+			code.add(StoreC); 	// store immutability status			// l a
+			code.add(Duplicate); 										// l a a
+			code.add(PushI, 5); 										// l a a 5
+			code.add(Add); 												// l a a+5
+			if (subtype instanceof CompoundType) code.add(PushI, 1);	// l a a+5 1									
+			else code.add(PushI, 0);									// l a a+5 0
+			code.add(StoreC); 	// store subtype-is-reference status	// l a
+			code.add(Duplicate); 										// l a a
+			code.add(PushI, 6); 										// l a a 6
+			code.add(Add); 												// l a a+6
+			code.add(PushI, 0); 										// l a a+6 0
+			code.add(StoreC); 	// store is-deleted status				// l a
+			code.add(Duplicate); 										// l a a
+			code.add(PushI, 7); 										// l a a 7
+			code.add(Add); 												// l a a+7
+			code.add(PushI, 0); 										// l a a+7 0
+			code.add(StoreC); 	// store is-permanent status			// l a
+			code.add(Duplicate); 										// l a a
+			code.add(PushI, 8); 										// l a a 8
+			code.add(Add); 												// l a a+8
+			code.add(PushI, subtypeSize); 								// l a a+8 s
+			code.add(StoreI); 	// store subtype size					// l a
+			code.add(Duplicate); 										// l a a
+			code.add(Memtop);
+			code.add(PushI, 4);
+			code.add(Subtract); 										// l a a m-4
+			code.add(Exchange); 										// l a m-4 a
+			code.add(StoreI); 											// l a
+			code.add(PushI, 12); 										// l a 12
+			code.add(Add); 												// l a+12
+			code.add(Exchange); 										// a+12 l
+			code.add(StoreI); 											//
+			code.add(Memtop);
+			code.add(PushI, 4);
+			code.add(Subtract);											// m-4
+			code.add(LoadI); 											// a
+		}
+		
 		///////////////////////////////////////////////////////////////////////////
 		// leaf nodes (ErrorNode not necessary)
 		public void visit(BooleanConstantNode node) {

@@ -1,5 +1,7 @@
 exec {
-	var a := [^s^, ^a^, ^i^, ^d^, ^d^].
-	var b := [1, 2, 3, 4, 5, 6].
-	print b[5], _n_.
+	var a := [1, 2, 3, 4, 5].
+	#var b := new [int](5).
+	print a[0], _n_.
+	a[0] := 6.
+	print a[0], _n_.
 }

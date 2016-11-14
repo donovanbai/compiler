@@ -22,6 +22,7 @@ public class RunTime {
 	public static final String FLOATING_DIVIDE_BY_ZERO_RUNTIME_ERROR = "$$f-divide-by-zero";
 	public static final String ZERO_DENOMINATOR_RUNTIME_ERROR = "$$zero-denominator";
 	public static final String INVALID_INDEX_RUNTIME_ERROR = "$$invalid-index";
+	public static final String NEGATIVE_LENGTH_RUNTIME_ERROR = "$$negative-length";
 
 	private ASMCodeFragment environmentASM() {
 		ASMCodeFragment result = new ASMCodeFragment(GENERATES_VOID);
@@ -73,6 +74,7 @@ public class RunTime {
 		floatingDivideByZeroError(frag);
 		zeroDenominatorError(frag);
 		invalidIndexError(frag);
+		negativeLengthError(frag);
 		
 		return frag;
 	}
@@ -125,6 +127,16 @@ public class RunTime {
 		frag.add(DataS, "index is invalid");
 		
 		frag.add(Label, INVALID_INDEX_RUNTIME_ERROR);
+		frag.add(PushD, errorMessage);
+		frag.add(Jump, GENERAL_RUNTIME_ERROR);	
+	}
+	private void negativeLengthError(ASMCodeFragment frag) {
+		String errorMessage = "$errors-negative-length";
+		
+		frag.add(DLabel, errorMessage);
+		frag.add(DataS, "array length is negative");
+		
+		frag.add(Label, NEGATIVE_LENGTH_RUNTIME_ERROR);
 		frag.add(PushD, errorMessage);
 		frag.add(Jump, GENERAL_RUNTIME_ERROR);	
 	}

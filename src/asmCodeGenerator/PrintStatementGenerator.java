@@ -3,6 +3,7 @@ package asmCodeGenerator;
 import static asmCodeGenerator.codeStorage.ASMOpcode.*;
 
 import parseTree.ParseNode;
+import parseTree.nodeTypes.BinaryOperatorNode;
 import parseTree.nodeTypes.IdentifierNode;
 import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
@@ -138,7 +139,16 @@ public class PrintStatementGenerator {
 			String intFormat = printFormat(PrimitiveType.INTEGER);
 			String charFormat = printFormat(PrimitiveType.CHARACTER);		
 			
-			code.append(visitor.removeValueCode(node));
+			if (node instanceof BinaryOperatorNode) {
+				code.append(visitor.removeAddressCode(node));	// a
+				code.add(Duplicate); 							// a, a
+				code.add(LoadI); 								// a, n
+				code.add(Exchange); 							// n, a
+				code.add(PushI, 4); 							// n, a, 4
+				code.add(Add); 									// n, a+4
+				code.add(LoadI); 								// n, d
+			}
+			else code.append(visitor.removeValueCode(node));	// n, d
 			code.add(Duplicate);		// n, d, d
 			code.add(Memtop);
 			code.add(PushI, 4);

@@ -21,17 +21,13 @@ import parseTree.nodeTypes.IdentifierNode;
 import parseTree.nodeTypes.IfStmtNode;
 import parseTree.nodeTypes.IntegerConstantNode;
 import parseTree.nodeTypes.MainBlockNode;
+import parseTree.nodeTypes.NewArrayNode;
 import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
-import parseTree.nodeTypes.TypeBoolNode;
-import parseTree.nodeTypes.TypeCharNode;
-import parseTree.nodeTypes.TypeFloatNode;
-import parseTree.nodeTypes.TypeIntNode;
-import parseTree.nodeTypes.TypeRatNode;
-import parseTree.nodeTypes.TypeStringNode;
+import parseTree.nodeTypes.TypeNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
 import parseTree.nodeTypes.WhileStmtNode;
 import tokens.CharToken;
@@ -320,7 +316,7 @@ public class Parser {
 	// multiplicativeExpression -> notExpression [(MULT|/|//) notExpression]*  (left-assoc)
 	// notExpression			-> [!]* arrayIndexingExpr (right-assoc)
 	// arrayIndexingExpr		-> atomicExpression | identifier[expr]
-	// atomicExpression         -> literal | (expr) | [expr|type] | [expr (,expr)*]
+	// atomicExpression         -> literal | (expr) | [expr|type] | [expr (,expr)*] | new[]()
 	// literal                  -> intNumber | identifier | booleanConstant
 
 	private ParseNode parseExpression() {		
@@ -484,7 +480,7 @@ public class Parser {
 			expect(Punctuator.RRB);
 			return result;
 		}
-		else {	// isLSB(nowReading)
+		else if(isLSB(nowReading)){
 			Token exprListToken = nowReading;
 			readToken();
 			ParseNode result = parseExpression();
@@ -492,17 +488,12 @@ public class Parser {
 				Token castToken = nowReading;
 				readToken();
 				Token typeToken = nowReading;
+				if (!Keyword.isAType(typeToken.getLexeme())) {
+					return syntaxErrorNode("atomic expression");
+				}
 				readToken();
 				expect(Punctuator.RSB);
-				switch (typeToken.getLexeme()) {
-					case "bool": return BinaryOperatorNode.withChildren(castToken, result, new TypeBoolNode(typeToken));
-					case "char": return BinaryOperatorNode.withChildren(castToken, result, new TypeCharNode(typeToken));
-					case "string": return BinaryOperatorNode.withChildren(castToken, result, new TypeStringNode(typeToken));
-					case "int": return BinaryOperatorNode.withChildren(castToken, result, new TypeIntNode(typeToken));
-					case "float": return BinaryOperatorNode.withChildren(castToken, result, new TypeFloatNode(typeToken));
-					case "rat": return BinaryOperatorNode.withChildren(castToken, result, new TypeRatNode(typeToken));
-					default: return syntaxErrorNode("atomic expression");
-				}
+				return BinaryOperatorNode.withChildren(castToken, result, new TypeNode(typeToken));
 			}
 			else {	// exprList
 				ExprListNode exprList = new ExprListNode(exprListToken);
@@ -516,9 +507,27 @@ public class Parser {
 				return exprList;
 			}
 		}
+		else {	// Keyword NEW
+			Token newToken = nowReading;
+			readToken();
+			expect(Punctuator.LSB);
+			if (!Keyword.isAType(nowReading.getLexeme())) {
+				return syntaxErrorNode("atomic expression");
+			}
+			TypeNode typeNode = new TypeNode(nowReading);
+			readToken();
+			expect(Punctuator.RSB);
+			expect(Punctuator.LRB);
+			ParseNode expr = parseExpression();
+			expect(Punctuator.RRB);
+			NewArrayNode arrayNode = new NewArrayNode(newToken);
+			arrayNode.appendChild(typeNode);
+			arrayNode.appendChild(expr);
+			return arrayNode;
+		}
 	}
 	private boolean startsAtomicExpression(Token token) {
-		return startsLiteral(token) || isLRB(token) || isLSB(token);
+		return startsLiteral(token) || isLRB(token) || isLSB(token) || Keyword.forLexeme(token.getLexeme()) == Keyword.NEW;
 	}
 	
 	// literal -> integer | float | boolean | char | string | identifier
@@ -610,12 +619,18 @@ public class Parser {
 	}
 
 	// identifier (terminal)
-	private ParseNode parseIdentifier() {
+	private ParseNode parseIdentifier() {	// returns an IdentifierNode, or a BinaryOperatorNode if expression is a[i] = n
 		if(!startsIdentifier(nowReading)) {
 			return syntaxErrorNode("identifier");
 		}
+		IdentifierNode idNode = new IdentifierNode(nowReading);
 		readToken();
-		return new IdentifierNode(previouslyRead);
+		if (!nowReading.isLextant(Punctuator.LSB)) return idNode;
+		Token indexToken = nowReading;
+		readToken();
+		ParseNode expr = parseExpression();
+		expect(Punctuator.RSB);
+		return BinaryOperatorNode.withChildren(indexToken, idNode, expr);
 	}
 	private static boolean startsIdentifier(Token token) {
 		return token instanceof IdentifierToken;

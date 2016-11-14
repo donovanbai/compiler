@@ -4,9 +4,9 @@ import parseTree.ParseNode;
 import parseTree.ParseNodeVisitor;
 import tokens.Token;
 
-public class TypeStringNode extends ParseNode {
+public class TypeNode extends ParseNode {
 
-	public TypeStringNode(Token token) {
+	public TypeNode(Token token) {
 		super(token);
 	}
 	
