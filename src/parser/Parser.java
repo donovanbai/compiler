@@ -21,6 +21,7 @@ import parseTree.nodeTypes.FloatConstantNode;
 import parseTree.nodeTypes.IdentifierNode;
 import parseTree.nodeTypes.IfStmtNode;
 import parseTree.nodeTypes.IntegerConstantNode;
+import parseTree.nodeTypes.LengthNode;
 import parseTree.nodeTypes.MainBlockNode;
 import parseTree.nodeTypes.NewArrayNode;
 import parseTree.nodeTypes.NewlineNode;
@@ -446,12 +447,18 @@ public class Parser {
 			ParseNode id = parseIdentifier();
 			return CloneNode.withChild(cloneToken, id);
 		}
+		else if (Keyword.forLexeme(nowReading.getLexeme()) == Keyword.LENGTH) {
+			Token lengthToken = nowReading;
+			readToken();
+			ParseNode id = parseIdentifier();
+			return LengthNode.withChild(lengthToken, id);
+		}
 		else {
 			return parseArrayIndexingExpr();
 		}
 	}
 	private boolean startsNotExpression(Token token) {
-		return startsArrayIndexingExpr(token) || token.isLextant(Punctuator.NOT) || Keyword.forLexeme(token.getLexeme()) == Keyword.CLONE;
+		return startsArrayIndexingExpr(token) || token.isLextant(Punctuator.NOT) || Keyword.forLexeme(token.getLexeme()) == Keyword.CLONE || Keyword.forLexeme(token.getLexeme()) == Keyword.LENGTH;
 	}
 	
 	private ParseNode parseArrayIndexingExpr() {

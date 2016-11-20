@@ -24,6 +24,7 @@ import parseTree.nodeTypes.FloatConstantNode;
 import parseTree.nodeTypes.IdentifierNode;
 import parseTree.nodeTypes.IfStmtNode;
 import parseTree.nodeTypes.IntegerConstantNode;
+import parseTree.nodeTypes.LengthNode;
 import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
@@ -222,7 +223,13 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	}
 	@Override
 	public void visitLeave(CloneNode node) {
+		assert node.child(0).getType() instanceof CompoundType: "clone argument is not an array";
 		node.setType(node.child(0).getType());
+	}
+	@Override
+	public void visitLeave(LengthNode node) {
+		assert node.child(0).getType() instanceof CompoundType: "length argument is not an array";
+		node.setType(PrimitiveType.INTEGER);
 	}
 
 	///////////////////////////////////////////////////////////////////////////

@@ -26,6 +26,7 @@ import parseTree.nodeTypes.FloatConstantNode;
 import parseTree.nodeTypes.IdentifierNode;
 import parseTree.nodeTypes.IfStmtNode;
 import parseTree.nodeTypes.IntegerConstantNode;
+import parseTree.nodeTypes.LengthNode;
 import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
@@ -1501,6 +1502,14 @@ public class ASMCodeGenerator {
 			code.add(PushI, 12);
 			code.add(Subtract); 								// m-12
 			code.add(LoadI); 									// c
+		}
+		
+		public void visitLeave(LengthNode node) {
+			newValueCode(node);
+			code.append(removeValueCode(node.child(0)));		// a
+			code.add(PushI, 12); 								// a 12
+			code.add(Add); 										// a+12
+			code.add(LoadI); 									// length
 		}
 		
 		///////////////////////////////////////////////////////////////////////////
