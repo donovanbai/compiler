@@ -177,6 +177,26 @@ public class ASMCodeGenerator {
 			}
 			code.markAsValue();
 		}
+		private ASMOpcode opcodeForLoad(Type type) {
+			
+			if(type == PrimitiveType.INTEGER) {
+				return LoadI;
+			}	
+			if(type == PrimitiveType.BOOLEAN) {
+				return LoadC;
+			}	
+			if (type == PrimitiveType.FLOATING) {
+				return LoadF;
+			}
+			if (type == PrimitiveType.CHARACTER) {
+				return LoadC;
+			}
+			if (type instanceof CompoundType) {
+				return LoadI;
+			}
+			assert false: "Type " + type + " unimplemented in opcodeForLoad()";
+			return null;
+		}
 		
 	    ////////////////////////////////////////////////////////////////////
         // ensures all types of ParseNode in given AST have at least a visitLeave	
@@ -1261,8 +1281,226 @@ public class ASMCodeGenerator {
 			code.add(LoadI); 											// a
 		}
 		
-		public void visitLeave(CloneNode node) {
+		public void visitLeave(CloneNode node) {	// b := clone a.
 			newAddressCode(node);
+			code.append(removeValueCode(node.child(0)));		// a
+			code.add(Duplicate); 								// a a
+			code.add(Duplicate); 								// a a a
+			code.add(PushI, 8); 								// a a a 8
+			code.add(Add); 										// a a a+8
+			code.add(LoadI); 									// a a size
+			code.add(Duplicate); 								// a a size size
+			code.add(Memtop);
+			code.add(PushI, 4);
+			code.add(Subtract); 								// a a size size m-4
+			code.add(Exchange); 								// a a size m-4 size
+			code.add(StoreI); 									// a a size					m-4: size
+			code.add(Exchange); 								// a size a
+			code.add(PushI, 12); 								// a size a 12
+			code.add(Add); 										// a size a+12
+			code.add(LoadI); 									// a size length
+			code.add(Duplicate); 								// a size length length
+			code.add(Memtop);
+			code.add(PushI, 8);
+			code.add(Subtract);									// a size length length m-8
+			code.add(Exchange); 								// a size length m-8 length
+			code.add(StoreI); 									// a size length			m-8: length
+			code.add(Multiply); 								// a size*length
+			code.add(PushI, 16); 								// a size*length 16
+			code.add(Add); 										// a #bytes
+			// allocate memory for clone
+			code.add(Call, MemoryManager.MEM_MANAGER_ALLOCATE);	// a c(address of clone)
+			code.add(Memtop);
+			code.add(PushI, 12);
+			code.add(Subtract); 								// a c m-12
+			code.add(Exchange); 								// a m-12 c
+			code.add(StoreI); 									// a						m-12: c
+			code.add(Duplicate); 								// a a
+			code.add(LoadI); 									// a typeid
+			code.add(Memtop);
+			code.add(PushI, 12);
+			code.add(Subtract); 								// a typeid m-12
+			code.add(LoadI); 									// a typeid c
+			code.add(Exchange); 								// a c typeid
+			// copy type id
+			code.add(StoreI); 									// a
+			code.add(Duplicate); 								// a a
+			code.add(PushI, 4); 								// a a 4
+			code.add(Add); 										// a a+4
+			code.add(LoadC); 									// a immutabilityStatus
+			code.add(Memtop);
+			code.add(PushI, 12);
+			code.add(Subtract); 								// a immutabilityStatus m-12
+			code.add(LoadI); 									// a immutabilityStatus c
+			code.add(PushI, 4); 								// a immutabilityStatus c 4
+			code.add(Add); 										// a immutabilityStatus c+4
+			code.add(Exchange); 								// a c+4 immutabilityStatus
+			// copy immutability status
+			code.add(StoreC); 									// a
+			code.add(Duplicate); 								// a a
+			code.add(PushI, 5); 								// a a 5
+			code.add(Add); 										// a a+5
+			code.add(LoadC); 									// a subtypeIsReferenceStatus
+			code.add(Memtop);
+			code.add(PushI, 12);
+			code.add(Subtract); 								// a subtypeIsReferenceStatus m-12
+			code.add(LoadI); 									// a subtypeIsReferenceStatus c
+			code.add(PushI, 5); 								// a subtypeIsReferenceStatus c 5
+			code.add(Add); 										// a subtypeIsReferenceStatus c+5
+			code.add(Exchange); 								// a c+5 subtypeIsReferenceStatus
+			// copy subtype-is-reference status
+			code.add(StoreC); 									// a
+			code.add(Duplicate); 								// a a
+			code.add(PushI, 6); 								// a a 6
+			code.add(Add); 										// a a+6
+			code.add(LoadC); 									// a isDeletedStatus
+			code.add(Memtop);
+			code.add(PushI, 12);
+			code.add(Subtract); 								// a isDeletedStatus m-12
+			code.add(LoadI); 									// a isDeletedStatus c
+			code.add(PushI, 6); 								// a isDeletedStatus c 6
+			code.add(Add); 										// a isDeletedStatus c+6
+			code.add(Exchange); 								// a c+6 isDeletedStatus
+			// copy is-deleted status
+			code.add(StoreC);									// a
+			code.add(Duplicate); 								// a a
+			code.add(PushI, 7); 								// a a 7
+			code.add(Add); 										// a a+7
+			code.add(LoadC); 									// a isPermanentStatus
+			code.add(Memtop);
+			code.add(PushI, 12);
+			code.add(Subtract); 								// a isPermanentStatus m-12
+			code.add(LoadI); 									// a isPermanentStatus c
+			code.add(PushI, 7); 								// a isPermanentStatus c 7
+			code.add(Add); 										// a isPermanentStatus c+7
+			code.add(Exchange); 								// a c+7 isPermanentStatus
+			// copy is-permanent status
+			code.add(StoreC);									// a
+			code.add(Duplicate); 								// a a
+			code.add(PushI, 8); 								// a a 8
+			code.add(Add); 										// a a+8
+			code.add(LoadI); 									// a size
+			code.add(Memtop);
+			code.add(PushI, 12);
+			code.add(Subtract);									// a size m-12
+			code.add(LoadI); 									// a size c
+			code.add(PushI, 8); 								// a size c 8
+			code.add(Add); 										// a size c+8
+			code.add(Exchange); 								// a c+8 size
+			// copy size
+			code.add(StoreI); 									// a
+			code.add(Duplicate); 								// a a
+			code.add(PushI, 12); 								// a a 12
+			code.add(Add); 										// a a+12
+			code.add(LoadI); 									// a length
+			code.add(Memtop);
+			code.add(PushI, 12);
+			code.add(Subtract);									// a length m-12
+			code.add(LoadI); 									// a length c
+			code.add(PushI, 12); 								// a length c 12
+			code.add(Add); 										// a length c+12
+			code.add(Exchange); 								// a c+12 length
+			// copy length
+			code.add(StoreI);									// a
+			
+			// copy elements
+			Labeller labeller = new Labeller("clone");
+			String startLabel = labeller.newLabel("start");
+			String joinLabel = labeller.newLabel("join");
+			Type subtype = CompoundType.makeChildType((CompoundType) node.child(0).getType());
+			
+			code.add(Memtop);
+			code.add(PushI, 8);
+			code.add(Subtract); 								// a m-8
+			code.add(LoadI); 									// a length
+			code.add(PushI, 1); 								// a length 1
+			code.add(Subtract); 								// a length-1
+			code.add(Exchange); 								// length-1 a
+			code.add(Memtop);
+			code.add(PushI, 16);
+			code.add(Subtract); 								// length-1 a m-16
+			code.add(Exchange); 								// length-1 m-16 a
+			code.add(StoreI); 									// length-1				m-16: a
+			
+			code.add(Label, startLabel);
+			code.add(Duplicate); 								// i i
+			code.add(Duplicate); 								// i i i
+			code.add(JumpNeg, joinLabel);						// i i
+			code.add(Memtop);
+			code.add(PushI, 16);
+			code.add(Subtract); 								// i i m-16
+			code.add(LoadI); 									// i i a
+			code.add(Exchange); 								// i a i			
+			code.add(Memtop);
+			code.add(PushI, 4);
+			code.add(Subtract);  								// i a i m-4
+			code.add(LoadI); 									// i a i size
+			code.add(Multiply); 								// i a i*size
+			code.add(PushI, 16); 								// i a i*size 16
+			code.add(Add); 										// i a offset
+			code.add(Duplicate); 								// i a offset offset
+			code.add(Memtop);
+			code.add(PushI, 20);
+			code.add(Subtract);	 								// i a offset offset m-20
+			code.add(Exchange); 								// i a offset m-20 offset
+			code.add(StoreI); 									// i a offset				m-20: offset
+			code.add(Add); 										// i a+offset
+			if(subtype != PrimitiveType.RATIONAL) {
+				code.add(opcodeForLoad(subtype));  				// i e(element)
+				code.add(Memtop);
+				code.add(PushI, 12);
+				code.add(Subtract); 							// i e m-12
+				code.add(LoadI); 								// i e c
+				code.add(Memtop);
+				code.add(PushI, 20);
+				code.add(Subtract); 							// i e c m-20
+				code.add(LoadI); 								// i e c offset
+				code.add(Add); 									// i e c+offset
+				code.add(Exchange); 							// i c+offset e
+				code.add(opcodeForStore(subtype)); 				// i
+			}
+			else {
+				code.add(Duplicate); 							// i a+offset a+offset
+				code.add(LoadI); 								// i a+offset n
+				code.add(Memtop);
+				code.add(PushI, 12);
+				code.add(Subtract); 							// i a+offset n m-12
+				code.add(LoadI); 								// i a+offset n c
+				code.add(Memtop);
+				code.add(PushI, 20);
+				code.add(Subtract); 							// i a+offset n c m-20
+				code.add(LoadI); 								// i a+offset n c offset
+				code.add(Add); 									// i a+offset n c+offset
+				code.add(Exchange); 							// i a+offset c+offset n
+				code.add(StoreI); 								// i a+offset
+				code.add(PushI, 4); 							// i a+offset 4
+				code.add(Add); 									// i a+offset+4
+				code.add(LoadI); 								// i d
+				code.add(Memtop);
+				code.add(PushI, 12);
+				code.add(Subtract); 							// i d m-12
+				code.add(LoadI); 								// i d c
+				code.add(Memtop);
+				code.add(PushI, 20);
+				code.add(Subtract); 							// i d c m-20
+				code.add(LoadI);								// i d c offset
+				code.add(Add); 									// i d c+offset
+				code.add(PushI, 4); 							// i d c+offset 4
+				code.add(Add); 									// i d c+offset+4
+				code.add(Exchange); 							// i c+offset+4 d
+				code.add(StoreI); 								// i
+			}
+			code.add(PushI, 1); 							// i 1
+			code.add(Subtract); 							// i-1
+			code.add(Jump, startLabel);
+			
+			code.add(Label, joinLabel); 						// -1 -1
+			code.add(Pop);
+			code.add(Pop);
+			code.add(Memtop);
+			code.add(PushI, 12);
+			code.add(Subtract); 								// m-12
+			code.add(LoadI); 									// c
 		}
 		
 		///////////////////////////////////////////////////////////////////////////
