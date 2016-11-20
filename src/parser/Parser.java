@@ -72,6 +72,9 @@ public class Parser {
 		}
 		ParseNode program = new ProgramNode(nowReading);
 		
+		while(Keyword.forLexeme(nowReading.getLexeme()) == Keyword.FUNC) {
+			// NEEDS WORK
+		}
 		expect(Keyword.EXEC);
 		ParseNode mainBlock = parseMainBlock();
 		program.appendChild(mainBlock);

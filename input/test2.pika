@@ -1,8 +1,11 @@
+func weight<int numHydrogen, int numOxygen>->float {
+	const g := 6.02E23.
+	const hy := 1.008.
+	const ox := 15.999.
+	const molecularWeight := hy * [numHydrogen|float] + ox * [numOxygen|float].
+	return molecularWeight * g.
+}
 exec {
 	var a := [1//2, 1//3, 1//4].
 	var b := clone a. 
-	release a.
-	var c := clone b.
-	print b[0], _n_.
-	print c[0], _n_.
 }

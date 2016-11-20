@@ -32,6 +32,7 @@ public enum Punctuator implements Lextant {
 	OVER("//"),
 	EXPRESS_OVER("///"),
 	RATIONALIZE("////"),
+	ARROW("->"),
 	NULL_PUNCTUATOR("");
 
 	private String lexeme;

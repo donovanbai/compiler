@@ -25,7 +25,9 @@ public enum Keyword implements Lextant {
 	NEW("new"),
 	CLONE("clone"),
 	RELEASE("release"),
-	LENGTH("length");
+	LENGTH("length"),
+	FUNC("func"),
+	RETURN("return");
 
 	private String lexeme;
 	private Token prototype;

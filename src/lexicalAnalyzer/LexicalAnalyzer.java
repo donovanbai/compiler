@@ -46,7 +46,7 @@ public class LexicalAnalyzer extends ScannerImp implements Scanner {
 			return scanIdentifier(ch);
 		}
 		else if (isPunctuatorStart(ch)) {	
-			if ((ch.getCharacter() == '+' || ch.getCharacter() == '-') &&  !prevIsLitOrBracket || ch.getCharacter() == '.' && input.peek().isDigit()) {
+			if ((ch.getCharacter() == '+' || ch.getCharacter() == '-') &&  !prevIsLitOrBracket && input.peek().getCharacter() != '>' || ch.getCharacter() == '.' && input.peek().isDigit()) {
 				return scanNumber(ch);
 			}
 			else {
