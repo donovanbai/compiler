@@ -1,8 +1,8 @@
 exec {
 	var a := [1//2, 1//3, 1//4].
 	var b := clone a. 
-	var len1 := length a.
-	var len2 := length b.
-	print len1, _n_.
-	print len2, _n_.
+	release a.
+	var c := clone b.
+	print b[0], _n_.
+	print c[0], _n_.
 }

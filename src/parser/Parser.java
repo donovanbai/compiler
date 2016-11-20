@@ -27,6 +27,7 @@ import parseTree.nodeTypes.NewArrayNode;
 import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
+import parseTree.nodeTypes.ReleaseNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
 import parseTree.nodeTypes.TypeNode;
@@ -135,10 +136,13 @@ public class Parser {
 		if(startsWhileStmt(nowReading)) {
 			return parseWhileStmt();
 		}
+		if(startsReleaseStmt(nowReading)) {
+			return parseReleaseStmt();
+		}
 		return syntaxErrorNode("statement");
 	}
 	private boolean startsStatement(Token token) {
-		return startsPrintStatement(token) || startsDeclaration(token) || startsAssignment(token) || startsBlockStmt(token) || startsIfStmt(token) || startsWhileStmt(token);
+		return startsPrintStatement(token) || startsDeclaration(token) || startsAssignment(token) || startsBlockStmt(token) || startsIfStmt(token) || startsWhileStmt(token) || startsReleaseStmt(token);
 	}
 	
 	// printStmt -> PRINT printExpressionList .
@@ -306,6 +310,17 @@ public class Parser {
 	}
 	private boolean startsWhileStmt(Token token) {
 		return Keyword.forLexeme(token.getLexeme()) == Keyword.WHILE;
+	}
+	private ParseNode parseReleaseStmt() {
+		if (!startsReleaseStmt(nowReading)) return syntaxErrorNode("release statement");
+		Token releaseToken = nowReading;
+		readToken();
+		ParseNode id = parseIdentifier();
+		expect(Punctuator.TERMINATOR);
+		return ReleaseNode.withChild(releaseToken, id);
+	}
+	private boolean startsReleaseStmt(Token token) {
+		return Keyword.forLexeme(token.getLexeme()) == Keyword.RELEASE;
 	}
 	
 	///////////////////////////////////////////////////////////

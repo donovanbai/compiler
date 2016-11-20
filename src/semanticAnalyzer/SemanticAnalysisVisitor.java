@@ -28,6 +28,7 @@ import parseTree.nodeTypes.LengthNode;
 import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
+import parseTree.nodeTypes.ReleaseNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
 import parseTree.nodeTypes.TypeNode;
@@ -230,6 +231,10 @@ class SemanticAnalysisVisitor extends ParseNodeVisitor.Default {
 	public void visitLeave(LengthNode node) {
 		assert node.child(0).getType() instanceof CompoundType: "length argument is not an array";
 		node.setType(PrimitiveType.INTEGER);
+	}
+	@Override
+	public void visitLeave(ReleaseNode node) {
+		assert node.child(0).getType() instanceof CompoundType: "release argument is not an array";
 	}
 
 	///////////////////////////////////////////////////////////////////////////

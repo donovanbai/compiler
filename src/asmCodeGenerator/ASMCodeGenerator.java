@@ -30,6 +30,7 @@ import parseTree.nodeTypes.LengthNode;
 import parseTree.nodeTypes.NewlineNode;
 import parseTree.nodeTypes.PrintStatementNode;
 import parseTree.nodeTypes.ProgramNode;
+import parseTree.nodeTypes.ReleaseNode;
 import parseTree.nodeTypes.SpaceNode;
 import parseTree.nodeTypes.StringConstantNode;
 import parseTree.nodeTypes.UnaryOperatorNode;
@@ -1510,6 +1511,33 @@ public class ASMCodeGenerator {
 			code.add(PushI, 12); 								// a 12
 			code.add(Add); 										// a+12
 			code.add(LoadI); 									// length
+		}
+		public void visitLeave(ReleaseNode node) {	// only works if the subtype is not a reference type
+			Labeller labeller = new Labeller("release");
+			String joinLabel = labeller.newLabel("join");
+			
+			newVoidCode(node);
+			code.append(removeValueCode(node.child(0)));  		// a
+			code.add(Duplicate); 								// a a
+			code.add(PushI, 6); 								// a a 6
+			code.add(Add); 										// a a+6
+			code.add(LoadC); 									// a is-deleted-status
+			code.add(JumpTrue, joinLabel);						// a
+			code.add(Duplicate); 								// a a
+			code.add(PushI, 7); 								// a a 7
+			code.add(Add); 										// a a+7
+			code.add(LoadC); 									// a is-permanent-status
+			code.add(JumpTrue, joinLabel); 						// a
+			code.add(Duplicate); 								// a a
+			code.add(PushI, 6); 								// a a 6
+			code.add(Add); 										// a a+6
+			code.add(PushI, 1); 								// a a+6 1
+			code.add(StoreC); 									// a
+			code.add(Call, MemoryManager.MEM_MANAGER_DEALLOCATE);
+			code.add(PushI, 1); // this is because pop is next
+			
+			code.add(Label, joinLabel); 						// a | 1
+			code.add(Pop);
 		}
 		
 		///////////////////////////////////////////////////////////////////////////
